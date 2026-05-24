@@ -15,7 +15,6 @@ class Court extends Model
         'location',
         'price_per_hour',
         'rating',
-        'image'
     ];
 
     public function category()

@@ -4,7 +4,7 @@ export default function CourtCard({ court }) {
 
             {/* IMAGE */}
             <img
-                src={`http://localhost:8000/images/${court.image}`}
+                src={court.category?.image || "/images/categories/default.jpg"}
                 className="w-full h-40 object-cover rounded-xl mb-4"
                 alt={court.name}
             />
