@@ -1,0 +1,35 @@
+import CategoryFilter from "@/features/courts/CategoryFilter";
+
+export default function DashboardHero({ setCategory, category }) {
+    return (
+        <section className="relative text-center py-24 overflow-hidden">
+
+            {/* BACKGROUND ICON */}
+            <div className="absolute inset-0 flex justify-center items-center opacity-20">
+                <div className="text-[200px] font-black text-gray-300">
+                    Lapanganku
+                </div>
+            </div>
+
+            <div className="relative z-10 max-w-4xl mx-auto">
+
+                <h1 className="text-6xl font-black tracking-tight text-slate-900">
+                    YOUR ARENA{" "}
+                    <span className="text-green-400">AWAITS</span>
+                </h1>
+
+                <p className="mt-6 text-gray-500 text-lg">
+                    Premium court booking for peak performance.
+                </p>
+
+                <div className="mt-10 flex justify-center">
+                    <CategoryFilter
+                        setCategory={setCategory}
+                        active={category}
+                    />
+                </div>
+
+            </div>
+        </section>
+    );
+}
