@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import useLogin from "./useLogin";
+import { getUser } from "./authService";
 
 export default function LoginForm() {
     const { handleLogin, loading, error } = useLogin();
@@ -23,7 +24,15 @@ export default function LoginForm() {
 
         try {
             await handleLogin(form);
-            window.location.href = "/dashboard";
+
+            const response = await getUser();
+            const user = response.data;
+
+            if (user.role === "admin") {
+                window.location.href = "/admin/dashboard";
+            } else {
+                window.location.href = "/dashboard";
+            }
         } catch (err) {}
     };
 
