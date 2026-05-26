@@ -10,6 +10,7 @@ export default function RegisterForm() {
         name: "",
         email: "",
         password: "",
+        password_confirmation: "",
     });
 
     const handleChange = (e) => {
@@ -40,6 +41,7 @@ export default function RegisterForm() {
                     type="text"
                     name="name"
                     placeholder="Masukkan nama"
+                    value={form.name}
                     onChange={handleChange}
                     className="w-full rounded-xl bg-white border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400"
                 />
@@ -54,6 +56,7 @@ export default function RegisterForm() {
                     type="email"
                     name="email"
                     placeholder="Masukkan email"
+                    value={form.email}
                     onChange={handleChange}
                     className="w-full rounded-xl bg-white border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400"
                 />
@@ -68,6 +71,22 @@ export default function RegisterForm() {
                     type="password"
                     name="password"
                     placeholder="Masukkan password"
+                    value={form.password}
+                    onChange={handleChange}
+                    className="w-full rounded-xl bg-white border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400"
+                />
+            </div>
+
+            {/* PASSWORD CONFIRMATION */}
+            <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Konfirmasi Password
+                </label>
+                <input
+                    type="password"
+                    name="password_confirmation"
+                    placeholder="Masukkan ulang password"
+                    value={form.password_confirmation}
                     onChange={handleChange}
                     className="w-full rounded-xl bg-white border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400"
                 />

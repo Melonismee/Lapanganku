@@ -1,37 +1,22 @@
 import api from "@/lib/axios";
 
-// ambil CSRF token manual
-function getCsrfToken() {
-    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : null;
-}
-
-// REGISTER
 export const register = async (data) => {
     await api.get("/sanctum/csrf-cookie");
 
-    const token = getCsrfToken() || "";
-
-    return api.post("/api/register", data, {
-        headers: {
-            "X-XSRF-TOKEN": token,
-        },
+    return api.post("/register", {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        password_confirmation: data.password_confirmation,
     });
 };
 
-// GET USER
-
-
-// LOGIN
 export const login = async (data) => {
     await api.get("/sanctum/csrf-cookie");
 
-    const token = getCsrfToken();
-
-    return api.post("/api/login", data, {
-        headers: {
-            "X-XSRF-TOKEN": token,
-        },
+    return api.post("/login", {
+        email: data.email,
+        password: data.password,
     });
 };
 
@@ -40,6 +25,5 @@ export const getUser = async () => {
 };
 
 export const logout = async () => {
-    await api.get("/sanctum/csrf-cookie"); // WAJIB
-    return api.post("/api/logout");
+    return api.post("/logout");
 };
