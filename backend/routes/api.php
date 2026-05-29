@@ -3,6 +3,7 @@
 use App\Models\Category;
 use App\Models\Court;
 use App\Models\Review;
+use App\Models\Payment;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -70,8 +71,17 @@ Route::middleware(['auth:sanctum'])->post('/bookings', function (Request $reques
         'status' => 'pending_payment',
     ]);
 
+    $payment = Payment::create([
+        'booking_id' => $booking->id,
+        'payment_method' => 'qris',
+        'amount' => $booking->total_price,
+        'qris_image' => 'qris.png',
+        'status' => 'unpaid',
+    ]);
+
     return response()->json([
         'message' => 'Booking berhasil dibuat',
         'booking' => $booking,
+        'payment' => $payment,
     ], 201);
 });
