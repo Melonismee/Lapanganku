@@ -1,10 +1,28 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { logout } from "@/features/auth/authService";
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { logout, getUser } from "@/features/auth/authService";
 
 export default function Navbar() {
     const router = useRouter();
+    const pathname = usePathname();
+
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const loadUser = async () => {
+            try {
+                const response = await getUser();
+                const userData = response.data?.user || response.data;
+                setUser(userData);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        loadUser();
+    }, []);
 
     const handleLogout = async () => {
         try {
@@ -15,35 +33,62 @@ export default function Navbar() {
         }
     };
 
+    const isExploreActive =
+        pathname === "/dashboard" ||
+        pathname.startsWith("/courts") ||
+        pathname.startsWith("/payment");
+
+    const menuClass = (active) => {
+        return active
+            ? "text-green-500 border-b-2 border-green-500"
+            : "text-gray-500 hover:text-slate-900";
+    };
+
     return (
-        <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-gray-100">
-            <div className="max-w-7xl mx-auto flex items-center justify-between px-8 py-4">
+        <header className="top-0 z-50 bg-white border-b border-gray-100">
+            <div className="w-full h-20 flex items-center justify-between px-10">
 
                 {/* LOGO */}
-                <h1 className="font-black text-xl tracking-tight text-slate-900">
+                <button
+                    onClick={() => router.push("/dashboard")}
+                    className="text-2xl font-black tracking-tight text-slate-900"
+                >
                     LAPANGANKU
-                </h1>
+                </button>
 
                 {/* MENU */}
-                <nav className="flex gap-8 text-sm font-semibold">
-                    <a className="text-green-500 border-b-2 border-green-500 pb-1">
+                <nav className="flex items-center gap-10 text-base font-bold">
+                    <button
+                        onClick={() => router.push("/dashboard")}
+                        className={`${menuClass(isExploreActive)} h-20 flex items-center`}
+                    >
                         Explore
-                    </a>
-                    <a className="text-gray-500 hover:text-black">
+                    </button>
+
+                    <button
+                        onClick={() => router.push("/bookings")}
+                        className={`${menuClass(pathname.startsWith("/bookings"))} h-20 flex items-center`}
+                    >
                         Bookings
-                    </a>
-                    <a className="text-gray-500 hover:text-black">
+                    </button>
+
+                    <button
+                        onClick={() => router.push("/support")}
+                        className={`${menuClass(pathname.startsWith("/support"))} h-20 flex items-center`}
+                    >
                         Support
-                    </a>
+                    </button>
                 </nav>
 
                 {/* RIGHT */}
-                <div className="flex items-center gap-4">
-                    <div className="w-8 h-8 rounded-full bg-gray-200" />
+                <div className="flex items-center gap-5">
+                    <p className="text-base font-black text-slate-900">
+                        {user?.name || "User"}
+                    </p>
 
                     <button
                         onClick={handleLogout}
-                        className="bg-red-500 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-red-600 transition"
+                        className="bg-red-500 text-white text-base font-bold px-6 py-3 rounded-xl hover:bg-red-600 transition"
                     >
                         Logout
                     </button>

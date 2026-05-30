@@ -11,6 +11,7 @@ import { getUser } from "@/features/auth/authService";
 import {
     createReview,
     getCourtDetail,
+    getBookedSlots,
 } from "@/features/courts/courtDetailService";
 
 export default function CourtDetailPage() {
@@ -21,6 +22,7 @@ export default function CourtDetailPage() {
     const [checkingAuth, setCheckingAuth] = useState(true);
     const [selectedDate, setSelectedDate] = useState("");
     const [selectedSlots, setSelectedSlots] = useState([]);
+    const [bookedSlots, setBookedSlots] = useState([]);
 
     const [reviewForm, setReviewForm] = useState({
         rating: 5,
@@ -71,6 +73,22 @@ export default function CourtDetailPage() {
         loadData();
     }, [id, router]);
 
+    useEffect(() => {
+        const loadBookedSlots = async () => {
+            if (!id || !selectedDate) return;
+
+            try {
+                const response = await getBookedSlots(id, selectedDate);
+                setBookedSlots(response.data.booked_slots || []);
+                setSelectedSlots([]);
+            } catch (error) {
+                console.log(error.response);
+            }
+        };
+
+        loadBookedSlots();
+    }, [id, selectedDate]);
+
     const formatRupiah = (value) => {
         return Number(value || 0).toLocaleString("id-ID");
     };
@@ -92,6 +110,10 @@ export default function CourtDetailPage() {
     };
 
     const toggleSlot = (slot) => {
+        if (bookedSlots.includes(slot)) {
+            return;
+        }
+
         if (selectedSlots.includes(slot)) {
             setSelectedSlots(selectedSlots.filter((item) => item !== slot));
         } else {
@@ -143,7 +165,7 @@ export default function CourtDetailPage() {
         try {
             const sortedSlots = [...selectedSlots].sort();
 
-            await createBooking({
+            const response = await createBooking({
                 court_id: court.id,
                 booking_date: selectedDate,
                 start_time: sortedSlots[0],
@@ -151,9 +173,18 @@ export default function CourtDetailPage() {
                 total_price: subtotal,
             });
 
-            alert("Booking berhasil dibuat. Lanjut ke pembayaran nanti.");
+            const bookingId =
+                response.data?.booking_id ||
+                response.data?.booking?.id;
+
+            if (!bookingId) {
+                alert("Booking berhasil dibuat, tapi ID booking tidak ditemukan.");
+                return;
+            }
+
+            router.push(`/payment/booking/${bookingId}`);
         } catch (error) {
-            console.log(error.response);
+            console.log("BOOKING ERROR:", error.response);
             alert(error.response?.data?.message || "Gagal membuat booking.");
         }
     };
@@ -192,7 +223,7 @@ export default function CourtDetailPage() {
                     </h1>
 
                     <div className="flex flex-wrap items-center gap-4 mt-4 text-gray-700">
-                        <span>📍 {court.location}</span>
+                        <span> {court.location}</span>
 
                         <span className="text-yellow-500 font-bold">
                             ⭐ {court.rating || 0}
@@ -230,15 +261,19 @@ export default function CourtDetailPage() {
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                             {timeSlots.map((slot) => {
                                 const active = selectedSlots.includes(slot);
+                                const booked = bookedSlots.includes(slot);
 
                                 return (
                                     <button
                                         key={slot}
                                         onClick={() => toggleSlot(slot)}
+                                        disabled={booked}
                                         className={`py-4 rounded-xl font-bold border transition ${
-                                            active
-                                                ? "bg-green-500 border-green-500 text-black shadow-md"
-                                                : "bg-green-50 border-green-200 text-slate-900 hover:bg-green-100"
+                                            booked
+                                                ? "bg-red-100 border-red-300 text-red-600 cursor-not-allowed"
+                                                : active
+                                                    ? "bg-green-500 border-green-500 text-black shadow-md"
+                                                    : "bg-green-50 border-green-200 text-slate-900 hover:bg-green-100"
                                         }`}
                                     >
                                         {slot}
