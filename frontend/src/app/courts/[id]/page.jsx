@@ -19,6 +19,7 @@ export default function CourtDetailPage() {
     const router = useRouter();
 
     const [court, setCourt] = useState(null);
+    const [user, setUser] = useState(null);
     const [checkingAuth, setCheckingAuth] = useState(true);
     const [selectedDate, setSelectedDate] = useState("");
     const [selectedSlots, setSelectedSlots] = useState([]);
@@ -53,16 +54,53 @@ export default function CourtDetailPage() {
         "23:00",
     ];
 
+    const highDemandHours = ["18:00", "19:00", "20:00"];
+
+    const formatInputDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
+    };
+
+    const isMembershipActive = () => {
+        if (!user?.is_member || !user?.membership_until) {
+            return false;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const membershipUntil = new Date(user.membership_until);
+        membershipUntil.setHours(0, 0, 0, 0);
+
+        return membershipUntil >= today;
+    };
+
+    const getMaxBookingDate = () => {
+        const maxDate = new Date();
+        maxDate.setHours(0, 0, 0, 0);
+        maxDate.setDate(maxDate.getDate() + (isMembershipActive() ? 3 : 2));
+
+        return formatInputDate(maxDate);
+    };
+
+    const isMemberOnlySlot = (slot) => {
+        return highDemandHours.includes(slot) && !isMembershipActive();
+    };
+
     useEffect(() => {
         const loadData = async () => {
             try {
-                await getUser();
+                const userResponse = await getUser();
+                setUser(userResponse.data || userResponse);
 
                 const response = await getCourtDetail(id);
                 setCourt(response.data);
 
                 const today = new Date();
-                setSelectedDate(today.toISOString().split("T")[0]);
+                setSelectedDate(formatInputDate(today));
             } catch (error) {
                 router.push("/login");
             } finally {
@@ -79,7 +117,12 @@ export default function CourtDetailPage() {
 
             try {
                 const response = await getBookedSlots(id, selectedDate);
-                setBookedSlots(response.data.booked_slots || []);
+
+                const normalizedBookedSlots = (response.data.booked_slots || []).map(
+                    (slot) => slot.slice(0, 5)
+                );
+
+                setBookedSlots(normalizedBookedSlots);
                 setSelectedSlots([]);
             } catch (error) {
                 console.log(error.response);
@@ -111,6 +154,10 @@ export default function CourtDetailPage() {
 
     const toggleSlot = (slot) => {
         if (bookedSlots.includes(slot)) {
+            return;
+        }
+
+        if (isMemberOnlySlot(slot)) {
             return;
         }
 
@@ -156,6 +203,9 @@ export default function CourtDetailPage() {
         }
     };
 
+    const price = Number(court?.price_per_hour || 0);
+    const subtotal = selectedSlots.length * price;
+
     const handleBooking = async () => {
         if (selectedSlots.length === 0) {
             alert("Pilih jam terlebih dahulu.");
@@ -197,9 +247,6 @@ export default function CourtDetailPage() {
         );
     }
 
-    const price = Number(court.price_per_hour || 0);
-    const subtotal = selectedSlots.length * price;
-
     return (
         <div className="min-h-screen bg-slate-50">
             <Navbar />
@@ -223,7 +270,7 @@ export default function CourtDetailPage() {
                     </h1>
 
                     <div className="flex flex-wrap items-center gap-4 mt-4 text-gray-700">
-                        <span> {court.location}</span>
+                        <span>{court.location}</span>
 
                         <span className="text-yellow-500 font-bold">
                             ⭐ {court.rating || 0}
@@ -244,9 +291,25 @@ export default function CourtDetailPage() {
                             Pilih Tanggal
                         </h2>
 
+                        <div className="mb-5 rounded-2xl border border-green-100 bg-green-50 p-4">
+                            <p className="font-bold text-slate-900">
+                                {isMembershipActive()
+                                    ? "Membership"
+                                    : "Non Membership"}
+                            </p>
+
+                            <p className="mt-1 text-sm text-gray-700">
+                                {isMembershipActive()
+                                    ? "Kamu bisa booking sampai 3 hari ke depan dan bisa memilih jam ramai."
+                                    : "Kamu bisa booking sampai 2 hari ke depan. Jam 18:00, 19:00, dan 20:00 hanya untuk member."}
+                            </p>
+                        </div>
+
                         <input
                             type="date"
                             value={selectedDate}
+                            min={formatInputDate(new Date())}
+                            max={getMaxBookingDate()}
                             onChange={(e) => setSelectedDate(e.target.value)}
                             className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-green-400"
                         />
@@ -254,26 +317,59 @@ export default function CourtDetailPage() {
 
                     {/* TIME SLOTS */}
                     <div className="mt-8 bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-                        <h2 className="text-2xl font-black text-slate-900 mb-5">
-                            Pilih Jam
-                        </h2>
+                        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                            <div>
+                                <h2 className="text-2xl font-black text-slate-900">
+                                    Pilih Jam
+                                </h2>
+
+                                <p className="mt-2 max-w-md text-sm leading-relaxed text-gray-500">
+                                    Pilih jam yang tersedia untuk melakukan booking lapangan.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm font-bold text-slate-700">
+                                <div className="flex items-center gap-2">
+                                    <span className="h-4 w-4 rounded border border-green-300 bg-green-50"></span>
+                                    <span>Available</span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <span className="h-4 w-4 rounded bg-green-500"></span>
+                                    <span>Selected</span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <span className="h-4 w-4 rounded border border-red-300 bg-red-100"></span>
+                                    <span>Booked</span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <span className="h-4 w-4 rounded border border-gray-300 bg-gray-100"></span>
+                                    <span>Member Only</span>
+                                </div>
+                            </div>
+                        </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                             {timeSlots.map((slot) => {
                                 const active = selectedSlots.includes(slot);
                                 const booked = bookedSlots.includes(slot);
+                                const memberOnly = isMemberOnlySlot(slot);
 
                                 return (
                                     <button
                                         key={slot}
                                         onClick={() => toggleSlot(slot)}
-                                        disabled={booked}
-                                        className={`py-4 rounded-xl font-bold border transition ${
+                                        disabled={booked || memberOnly}
+                                        className={`rounded-xl border px-3 py-6 text-lg font-black transition ${
                                             booked
-                                                ? "bg-red-100 border-red-300 text-red-600 cursor-not-allowed"
-                                                : active
-                                                    ? "bg-green-500 border-green-500 text-black shadow-md"
-                                                    : "bg-green-50 border-green-200 text-slate-900 hover:bg-green-100"
+                                                ? "cursor-not-allowed border-red-300 bg-red-100 text-red-600"
+                                                : memberOnly
+                                                    ? "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400"
+                                                    : active
+                                                        ? "border-green-500 bg-green-500 text-black shadow-md"
+                                                        : "border-green-200 bg-green-50 text-slate-900 hover:bg-green-100"
                                         }`}
                                     >
                                         {slot}
@@ -447,13 +543,13 @@ export default function CourtDetailPage() {
                                             key={slot}
                                             className="flex justify-between text-sm"
                                         >
-                            <span className="font-semibold text-slate-900">
-                                {slot} - {getSlotEnd(slot)}
-                            </span>
+                                            <span className="font-semibold text-slate-900">
+                                                {slot} - {getSlotEnd(slot)}
+                                            </span>
 
                                             <span className="font-bold text-slate-900">
-                                Rp {formatRupiah(price)}
-                            </span>
+                                                Rp {formatRupiah(price)}
+                                            </span>
                                         </div>
                                     ))}
                                 </div>
@@ -465,13 +561,13 @@ export default function CourtDetailPage() {
                         </div>
 
                         <div className="mt-6 border-t pt-5 flex justify-between">
-            <span className="font-semibold text-gray-700">
-                Subtotal
-            </span>
+                            <span className="font-semibold text-gray-700">
+                                Subtotal
+                            </span>
 
                             <span className="font-black text-slate-900">
-                Rp {formatRupiah(subtotal)}
-            </span>
+                                Rp {formatRupiah(subtotal)}
+                            </span>
                         </div>
 
                         <div className="mt-6 bg-slate-50 rounded-2xl p-5 flex justify-between items-center">
@@ -492,7 +588,8 @@ export default function CourtDetailPage() {
                         <button
                             onClick={handleBooking}
                             disabled={selectedSlots.length === 0}
-                            className="mt-6 w-full bg-green-500 disabled:bg-gray-300 disabled:text-gray-500 text-black font-black py-4 rounded-xl hover:bg-green-600 transition">
+                            className="mt-6 w-full bg-green-500 disabled:bg-gray-300 disabled:text-gray-500 text-black font-black py-4 rounded-xl hover:bg-green-600 transition"
+                        >
                             Booking Sekarang →
                         </button>
                     </div>

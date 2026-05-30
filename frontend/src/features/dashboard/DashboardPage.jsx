@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import DashboardLayout from "./DashboardLayout";
 import DashboardHero from "./DashboardHero";
 import DashboardCourts from "./DashboardCourts";
+import MembershipPromoCard from "./MembershipPromoCard";
 
 import useCourts from "@/features/courts/useCourts";
 import { getUser } from "@/features/auth/authService";
@@ -32,7 +33,7 @@ export default function DashboardPage() {
 
     if (checkingAuth) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
+            <div className="flex min-h-screen items-center justify-center bg-gray-50">
                 <p className="text-gray-600">Loading...</p>
             </div>
         );
@@ -40,12 +41,15 @@ export default function DashboardPage() {
 
     return (
         <DashboardLayout>
-            <DashboardHero
-                setCategory={setCategory}
-                category={category}
-            />
+            <DashboardHero setCategory={setCategory} category={category} />
 
-            <DashboardCourts courts={courts} />
+            <div className="-mt-28 px-4 md:-mt-24">
+                <MembershipPromoCard />
+            </div>
+
+            <main className="mx-auto max-w-7xl px-4 pb-12 pt-14">
+                <DashboardCourts courts={courts} />
+            </main>
         </DashboardLayout>
     );
 }

@@ -19,6 +19,39 @@ class BookingController extends Controller
             'total_price' => ['required', 'integer', 'min:0'],
         ]);
 
+        $user = auth()->user();
+
+        $isMembershipActive = $user->is_member &&
+            $user->membership_until &&
+            now()->toDateString() <= $user->membership_until->toDateString();
+
+        $maxBookingDate = $isMembershipActive
+            ? now()->addDays(3)->toDateString()
+            : now()->addDays(2)->toDateString();
+
+        if ($request->booking_date < now()->toDateString()) {
+            return response()->json([
+                'message' => 'Tanggal booking tidak boleh kurang dari hari ini'
+            ], 422);
+        }
+
+        if ($request->booking_date > $maxBookingDate) {
+            return response()->json([
+                'message' => $isMembershipActive
+                    ? 'Member hanya bisa booking sampai 3 hari ke depan'
+                    : 'User biasa hanya bisa booking sampai 2 hari ke depan'
+            ], 422);
+        }
+
+        $startTime = substr($request->start_time, 0, 5);
+        $highDemandHours = ['18:00', '19:00', '20:00'];
+
+        if (!$isMembershipActive && in_array($startTime, $highDemandHours)) {
+            return response()->json([
+                'message' => 'Jam ini hanya bisa dipesan oleh user membership'
+            ], 422);
+        }
+
         $conflict = Booking::where('court_id', $request->court_id)
             ->where('booking_date', $request->booking_date)
             ->whereIn('status', ['pending_payment', 'confirmed'])
