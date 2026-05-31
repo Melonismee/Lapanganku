@@ -7,15 +7,18 @@ import DashboardLayout from "./DashboardLayout";
 import DashboardHero from "./DashboardHero";
 import DashboardCourts from "./DashboardCourts";
 import MembershipPromoCard from "./MembershipPromoCard";
+import FeaturedCourts from "./FeaturedCourts";
 
 import useCourts from "@/features/courts/useCourts";
 import { getUser } from "@/features/auth/authService";
+import { getFeaturedCourts } from "@/features/courts/courtService";
 
 export default function DashboardPage() {
     const router = useRouter();
 
     const { courts, setCategory, category } = useCourts();
     const [checkingAuth, setCheckingAuth] = useState(true);
+    const [featuredCourts, setFeaturedCourts] = useState([]);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -30,6 +33,19 @@ export default function DashboardPage() {
 
         checkAuth();
     }, [router]);
+
+    useEffect(() => {
+        const loadFeatured = async () => {
+            try {
+                const res = await getFeaturedCourts();
+                setFeaturedCourts(res.data || []);
+            } catch (error) {
+                setFeaturedCourts([]);
+            }
+        };
+
+        loadFeatured();
+    }, []);
 
     if (checkingAuth) {
         return (
@@ -47,7 +63,8 @@ export default function DashboardPage() {
                 <MembershipPromoCard />
             </div>
 
-            <main className="mx-auto max-w-7xl px-4 pb-12 pt-14">
+            <main className="mx-auto max-w-7xl px-4 pb-12 pt-14 space-y-12">
+                <FeaturedCourts courts={featuredCourts} category={category} />
                 <DashboardCourts courts={courts} />
             </main>
         </DashboardLayout>

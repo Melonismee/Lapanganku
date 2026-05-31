@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function CourtCard({ court }) {
+export default function CourtCard({ court, badgeText }) {
     const imageName = court.category?.image || "default.jpg";
 
     const imageSrc = imageName.startsWith("/images/")
@@ -11,11 +11,19 @@ export default function CourtCard({ court }) {
         <Link href={`/courts/${court.id}`}>
             <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition p-4 cursor-pointer">
 
-                <img
-                    src={imageSrc}
-                    className="w-full h-40 object-cover rounded-xl mb-4"
-                    alt={court.name}
-                />
+                <div className="relative">
+                    <img
+                        src={imageSrc}
+                        className="w-full h-40 object-cover rounded-xl mb-4"
+                        alt={court.name}
+                    />
+
+                    {badgeText && (
+                        <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
+                            {badgeText}
+                        </div>
+                    )}
+                </div>
 
                 <h3 className="font-bold text-lg text-gray-900">
                     {court.name}

@@ -9,14 +9,17 @@ use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\Admin\AdminBookingController;
 use App\Http\Controllers\Api\Admin\AdminCourtController;
+use App\Http\Controllers\Api\SupportChatController;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
 
 Route::get('/courts', [CourtController::class, 'index']);
+Route::get('/courts/featured', [CourtController::class, 'featured']);
 Route::get('/courts/{court}', [CourtController::class, 'show']);
 Route::get('/categories', [CategoryController::class, 'index']);
+Route::post('/support/chat', [SupportChatController::class, 'chat']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/courts/{court}/reviews', [ReviewController::class, 'store']);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Court;
 use App\Models\Booking;
+use App\Models\CourtPromotion;
 use Illuminate\Http\Request;
 
 class CourtController extends Controller
@@ -47,5 +48,20 @@ class CourtController extends Controller
         return response()->json([
             'booked_slots' => array_values(array_unique($bookedSlots)),
         ]);
+    }
+
+    public function featured()
+    {
+        $today = now()->toDateString();
+
+        $courts = Court::with('category')
+            ->whereHas('promotions', function ($query) use ($today) {
+                $query->where('status', 'active')
+                    ->whereDate('start_date', '<=', $today)
+                    ->whereDate('end_date', '>=', $today);
+            })
+            ->get();
+
+        return $courts;
     }
 }

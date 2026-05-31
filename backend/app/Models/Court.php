@@ -34,4 +34,9 @@ class Court extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    public function promotions()
+    {
+        return $this->hasMany(CourtPromotion::class);
+    }
 }

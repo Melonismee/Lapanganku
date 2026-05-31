@@ -4,6 +4,10 @@ export const getCourts = async () => {
     return await api.get("/api/courts");
 };
 
+export const getFeaturedCourts = async () => {
+    return await api.get("/api/courts/featured");
+};
+
 export const getCategories = async () => {
     return api.get("/api/categories");
 };
