@@ -1,9 +1,43 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { simulateMembershipPayment } from "@/features/membership/membershipService";
 
 export default function MembershipPaymentPage() {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [message, setMessage] = useState("");
+
+    const handleSimulatePayment = async () => {
+        if (isSubmitting) {
+            return;
+        }
+
+        setIsSubmitting(true);
+        setMessage("");
+
+        try {
+            const response = await simulateMembershipPayment();
+            const until = response?.data?.membership_until;
+
+            setMessage(
+                until
+                    ? `Pembayaran berhasil. Membership aktif sampai ${until}.`
+                    : "Pembayaran berhasil. Membership kamu sudah aktif."
+            );
+        } catch (error) {
+            setMessage(
+                error?.response?.data?.message ||
+                    "Pembayaran gagal diproses. Coba lagi ya."
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-slate-50">
             <Navbar />
@@ -26,24 +60,37 @@ export default function MembershipPaymentPage() {
                     </p>
 
                     <div className="bg-slate-50 rounded-2xl p-6 text-center">
-                        <Image
-                            src="/images/qris.png"
-                            alt="QRIS Pembayaran"
-                            width={320}
-                            height={320}
-                            className="mx-auto rounded-xl border"
-                        />
+                        <button
+                            type="button"
+                            onClick={handleSimulatePayment}
+                            disabled={isSubmitting}
+                            className="mx-auto block rounded-xl border border-transparent focus:outline-none focus:ring-2 focus:ring-green-400"
+                        >
+                            <Image
+                                src="/images/qris.png"
+                                alt="QRIS Pembayaran"
+                                width={320}
+                                height={320}
+                                className="mx-auto rounded-xl border"
+                            />
+                        </button>
 
                         <p className="mt-5 text-sm text-gray-600 leading-relaxed">
                             Membership akan aktif setelah pembayaran dikonfirmasi.
                         </p>
 
+                        {message && (
+                            <p className="mt-4 text-sm font-semibold text-green-600">
+                                {message}
+                            </p>
+                        )}
+
                         <a
                             href="/images/qris.png"
                             download
-                            className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-green-500 py-4 text-black font-black hover:bg-green-600 transition"
+                            className={`mt-6 inline-flex w-full items-center justify-center rounded-xl bg-green-500 py-4 text-black font-black transition ${isSubmitting ? "opacity-60 pointer-events-none" : "hover:bg-green-600"}`}
                         >
-                            Unduh QR
+                            {isSubmitting ? "Memproses..." : "Unduh QR"}
                         </a>
                     </div>
                 </div>
@@ -53,4 +100,3 @@ export default function MembershipPaymentPage() {
         </div>
     );
 }
-

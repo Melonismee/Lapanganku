@@ -1,6 +1,10 @@
 import Link from "next/link";
 
-export default function MembershipPromoCard() {
+export default function MembershipPromoCard({ isMember }) {
+    if (isMember) {
+        return null;
+    }
+
     return (
         <section className="mx-auto mt-10 w-full max-w-5xl rounded-[2rem] bg-gradient-to-r from-green-600 via-emerald-500 to-lime-400 p-[1px] shadow-xl shadow-green-100">
             <div className="rounded-[2rem] bg-white/95 p-6 md:p-7">

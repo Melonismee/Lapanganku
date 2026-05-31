@@ -2,7 +2,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const MEMBERSHIP_PRICE = "Rp 150.000";
+const MEMBERSHIP_PRICE = "Rp. 25.000";
 const MEMBERSHIP_DURATION = "30 hari";
 
 export default function MembershipPage() {

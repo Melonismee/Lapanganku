@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             CourtSeeder::class,
             ReviewSeeder::class,
+            CourtPromotionSeeder::class,
         ]);
     }
 }

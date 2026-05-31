@@ -75,8 +75,8 @@ export default function SupportPage() {
                                     <div
                                         className={
                                             message.role === "user"
-                                                ? "bg-green-500 text-white rounded-2xl px-4 py-3 text-sm max-w-[80%]"
-                                                : "bg-white text-slate-800 rounded-2xl border border-gray-100 px-4 py-3 text-sm max-w-[80%]"
+                                                ? "bg-green-500 text-white rounded-2xl px-4 py-3 text-sm max-w-[80%] whitespace-pre-wrap break-words"
+                                                : "bg-white text-slate-800 rounded-2xl border border-gray-100 px-4 py-3 text-sm max-w-[80%] whitespace-pre-wrap break-words"
                                         }
                                     >
                                         {message.content}

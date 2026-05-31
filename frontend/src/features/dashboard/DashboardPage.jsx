@@ -19,11 +19,27 @@ export default function DashboardPage() {
     const { courts, setCategory, category } = useCourts();
     const [checkingAuth, setCheckingAuth] = useState(true);
     const [featuredCourts, setFeaturedCourts] = useState([]);
+    const [user, setUser] = useState(null);
+
+    const isMembershipActive = (currentUser) => {
+        if (!currentUser?.is_member || !currentUser?.membership_until) {
+            return false;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const membershipUntil = new Date(currentUser.membership_until);
+        membershipUntil.setHours(0, 0, 0, 0);
+
+        return membershipUntil >= today;
+    };
 
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                await getUser();
+                const response = await getUser();
+                setUser(response.data || response);
             } catch (error) {
                 router.push("/login");
             } finally {
@@ -55,13 +71,22 @@ export default function DashboardPage() {
         );
     }
 
+    const membershipActive = isMembershipActive(user);
+
     return (
         <DashboardLayout>
-            <DashboardHero setCategory={setCategory} category={category} />
+            <DashboardHero
+                setCategory={setCategory}
+                category={category}
+                isMember={membershipActive}
+                membershipUntil={user?.membership_until}
+            />
 
-            <div className="-mt-28 px-4 md:-mt-24">
-                <MembershipPromoCard />
-            </div>
+            {!membershipActive && (
+                <div className="-mt-28 px-4 md:-mt-24">
+                    <MembershipPromoCard />
+                </div>
+            )}
 
             <main className="mx-auto max-w-7xl px-4 pb-12 pt-14 space-y-12">
                 <FeaturedCourts courts={featuredCourts} category={category} />

@@ -42,5 +42,16 @@ class UserSeeder extends Seeder
                 'membership_until' => now()->addDays(30)->toDateString(),
             ]
         );
+
+        User::updateOrCreate(
+            ['email' => 'king@gmail.com'],
+            [
+                'name' => 'Ryuzora',
+                'password' => Hash::make('admin123'),
+                'role' => 'user',
+                'is_member' => false,
+                'membership_until' => null,
+            ]
+        );
     }
 }

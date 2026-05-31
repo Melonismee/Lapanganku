@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\Admin\AdminBookingController;
 use App\Http\Controllers\Api\Admin\AdminCourtController;
 use App\Http\Controllers\Api\SupportChatController;
+use App\Http\Controllers\Api\MembershipController;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
@@ -29,6 +30,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/my-bookings', [BookingController::class, 'myBookings']);
     Route::patch('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
     Route::patch('/bookings/{booking}/simulate-payment', [BookingController::class, 'simulatePayment']);
+
+    Route::post('/membership/simulate-payment', [MembershipController::class, 'simulatePayment']);
 
     Route::get('/courts/{court}/booked-slots', [CourtController::class, 'bookedSlots']);
 
