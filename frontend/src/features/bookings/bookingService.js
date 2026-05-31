@@ -15,3 +15,7 @@ export const getMyBookings = async () => {
 export const cancelBooking = async (id) => {
     return api.patch(`/api/bookings/${id}/cancel`);
 };
+
+export const simulatePayment = async (id) => {
+    return api.patch(`/api/bookings/${id}/simulate-payment`);
+};

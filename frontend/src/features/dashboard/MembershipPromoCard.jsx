@@ -40,15 +40,11 @@ export default function MembershipPromoCard() {
 
                     <div className="flex shrink-0 flex-col gap-3">
                         <Link
-                            href="/support"
+                            href="/membership"
                             className="inline-flex items-center justify-center rounded-2xl bg-gray-900 px-6 py-4 text-sm font-bold text-white transition hover:bg-green-600"
                         >
                             Berlangganan Membership
                         </Link>
-
-                        <p className="text-center text-xs text-gray-500">
-                            Pembayaran via QRIS manual
-                        </p>
                     </div>
                 </div>
             </div>

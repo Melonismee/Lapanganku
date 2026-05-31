@@ -25,6 +25,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/bookings/{booking}', [BookingController::class, 'show']);
     Route::get('/my-bookings', [BookingController::class, 'myBookings']);
     Route::patch('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
+    Route::patch('/bookings/{booking}/simulate-payment', [BookingController::class, 'simulatePayment']);
 
     Route::get('/courts/{court}/booked-slots', [CourtController::class, 'bookedSlots']);
 

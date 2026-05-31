@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { getBookingDetail } from "@/features/bookings/bookingService";
+import { getBookingDetail, simulatePayment } from "@/features/bookings/bookingService";
 
 export default function PaymentBookingPage() {
     const { id } = useParams();
@@ -12,9 +12,20 @@ export default function PaymentBookingPage() {
 
     const [booking, setBooking] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isPaying, setIsPaying] = useState(false);
 
     const formatRupiah = (value) => {
         return Number(value || 0).toLocaleString("id-ID");
+    };
+
+    const getAdminFee = (total) => {
+        const fee = Number(total || 0) * 0.02;
+        return Math.floor(fee / 1000) * 1000;
+    };
+
+    const getSubtotal = (total) => {
+        const fee = getAdminFee(total);
+        return Math.max(0, Number(total || 0) - fee);
     };
 
     useEffect(() => {
@@ -32,6 +43,29 @@ export default function PaymentBookingPage() {
 
         loadBooking();
     }, [id, router]);
+
+    const handleSimulatePayment = async () => {
+        if (isPaying) {
+            return;
+        }
+
+        setIsPaying(true);
+
+        try {
+            const response = await simulatePayment(id);
+            const updatedBooking = response.data?.booking;
+            setBooking(updatedBooking);
+
+            const courtId = updatedBooking?.court?.id || booking?.court?.id;
+            if (courtId) {
+                router.push(`/courts/${courtId}`);
+            }
+        } catch (error) {
+            console.log(error.response);
+        } finally {
+            setIsPaying(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -63,7 +97,7 @@ export default function PaymentBookingPage() {
                     </h1>
 
                     <p className="text-gray-500 mb-8">
-                        Scan QRIS di bawah ini, lalu tunggu admin mengonfirmasi pembayaran.
+                        Scan QRIS di bawah ini, untuk memproses pembayaran.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -116,7 +150,19 @@ export default function PaymentBookingPage() {
                                 </div>
 
                                 <div className="border-t pt-4">
-                                    <p className="text-gray-500">Total Bayar</p>
+                                    <p className="text-gray-500">Subtotal</p>
+                                    <p className="font-bold text-slate-900">
+                                        Rp {formatRupiah(getSubtotal(booking.total_price))}
+                                    </p>
+
+                                    <p className="mt-3 text-gray-500">
+                                        Biaya admin (2% dari total)
+                                    </p>
+                                    <p className="font-bold text-slate-900">
+                                        Rp {formatRupiah(getAdminFee(booking.total_price))}
+                                    </p>
+
+                                    <p className="mt-3 text-gray-500">Total Bayar</p>
                                     <p className="text-2xl font-black text-green-600">
                                         Rp {formatRupiah(booking.total_price)}
                                     </p>
@@ -129,19 +175,32 @@ export default function PaymentBookingPage() {
                                 <img
                                     src="/images/qris.png"
                                     alt="QRIS Pembayaran"
-                                    className="w-72 mx-auto rounded-xl border"
+                                    className="w-72 mx-auto rounded-xl border cursor-pointer"
+                                    onClick={handleSimulatePayment}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(event) => {
+                                        if (event.key === "Enter" || event.key === " ") {
+                                            event.preventDefault();
+                                            handleSimulatePayment();
+                                        }
+                                    }}
                                 />
 
                                 <p className="mt-5 text-sm text-gray-600 leading-relaxed">
-                                    Setelah membayar, admin akan mengecek pembayaran secara manual.
-                                    Status booking masih pending sampai admin mengonfirmasi.
+                                    Pesanan akan diproses 1-5 menit setelah pembayaran berhasil dilakukan.
                                 </p>
 
                                 <button
-                                    onClick={() => router.push("/dashboard")}
+                                    onClick={() => {
+                                        const link = document.createElement("a");
+                                        link.href = "/images/qris.png";
+                                        link.download = "qris.png";
+                                        link.click();
+                                    }}
                                     className="mt-6 w-full bg-green-500 text-black font-black py-4 rounded-xl hover:bg-green-600 transition"
                                 >
-                                    Selesai
+                                    {isPaying ? "Memproses..." : "Unduh QR"}
                                 </button>
                             </div>
                         </section>

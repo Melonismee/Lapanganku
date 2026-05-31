@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
@@ -146,6 +147,53 @@ class BookingController extends Controller
         return response()->json([
             'message' => 'Booking berhasil dibatalkan.',
             'booking' => $booking->load(['court.category', 'payment']),
+        ]);
+    }
+
+    public function simulatePayment(Request $request, Booking $booking)
+    {
+        if ($booking->user_id !== $request->user()->id) {
+            return response()->json([
+                'message' => 'Tidak punya akses ke booking ini'
+            ], 403);
+        }
+
+        if ($booking->status === 'cancelled') {
+            return response()->json([
+                'message' => 'Booking sudah dibatalkan.'
+            ], 422);
+        }
+
+        if (!$booking->payment) {
+            return response()->json([
+                'message' => 'Data pembayaran tidak ditemukan.'
+            ], 404);
+        }
+
+        if ($booking->payment->status === 'paid') {
+            return response()->json([
+                'message' => 'Pembayaran sudah dikonfirmasi.'
+            ], 422);
+        }
+
+        DB::transaction(function () use ($booking) {
+            $booking->update([
+                'status' => 'confirmed',
+            ]);
+
+            $booking->payment->update([
+                'status' => 'paid',
+                'paid_at' => now(),
+            ]);
+        });
+
+        return response()->json([
+            'message' => 'Pembayaran berhasil disimulasikan.',
+            'booking' => $booking->fresh()->load([
+                'court.category',
+                'payment',
+                'user:id,name,email',
+            ]),
         ]);
     }
 }

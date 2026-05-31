@@ -205,6 +205,9 @@ export default function CourtDetailPage() {
 
     const price = Number(court?.price_per_hour || 0);
     const subtotal = selectedSlots.length * price;
+    const adminFeeRaw = subtotal > 0 ? (subtotal * 0.02) / 0.98 : 0;
+    const adminFee = Math.max(0, Math.floor(adminFeeRaw / 1000) * 1000);
+    const totalWithAdmin = subtotal + adminFee;
 
     const handleBooking = async () => {
         if (selectedSlots.length === 0) {
@@ -220,7 +223,7 @@ export default function CourtDetailPage() {
                 booking_date: selectedDate,
                 start_time: sortedSlots[0],
                 end_time: getSlotEnd(sortedSlots[sortedSlots.length - 1]),
-                total_price: subtotal,
+                total_price: totalWithAdmin,
             });
 
             const bookingId =
@@ -570,6 +573,16 @@ export default function CourtDetailPage() {
                             </span>
                         </div>
 
+                        <div className="mt-4 flex justify-between text-sm text-gray-600">
+                            <span className="font-semibold">
+                                Biaya admin (2% dari total)
+                            </span>
+
+                            <span className="font-bold text-slate-900">
+                                Rp {formatRupiah(adminFee)}
+                            </span>
+                        </div>
+
                         <div className="mt-6 bg-slate-50 rounded-2xl p-5 flex justify-between items-center">
                             <div>
                                 <p className="font-bold text-slate-900">
@@ -581,7 +594,7 @@ export default function CourtDetailPage() {
                             </div>
 
                             <p className="text-2xl font-black text-green-500">
-                                Rp {formatRupiah(subtotal)}
+                                Rp {formatRupiah(totalWithAdmin)}
                             </p>
                         </div>
 

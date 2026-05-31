@@ -250,6 +250,10 @@ export default function BookingsPage() {
                                         Rp {formatRupiah(booking.total_price)}
                                     </p>
 
+                                    <p className="mt-2 text-xs font-semibold text-gray-500">
+                                        Biaya admin (2% dari total): Rp {formatRupiah(Math.floor((booking.total_price * 0.02) / 1000) * 1000)}
+                                    </p>
+
                                     {booking.status === "pending_payment" &&
                                         booking.payment?.status === "unpaid" && (
                                             <div className="mt-4 flex flex-col gap-3">
