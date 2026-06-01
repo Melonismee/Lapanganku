@@ -11,10 +11,11 @@ use App\Http\Controllers\Api\Admin\AdminBookingController;
 use App\Http\Controllers\Api\Admin\AdminCourtController;
 use App\Http\Controllers\Api\SupportChatController;
 use App\Http\Controllers\Api\MembershipController;
+use App\Http\Controllers\Api\Admin\AdminCourtPromotionController;
+use App\Http\Controllers\Api\Admin\AdminUserController;
+use App\Http\Controllers\Api\UserController;
 
-Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::middleware(['auth:sanctum'])->get('/user', [UserController::class, 'me']);
 
 Route::get('/courts', [CourtController::class, 'index']);
 Route::get('/courts/featured', [CourtController::class, 'featured']);
@@ -41,4 +42,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/admin/courts', [AdminCourtController::class, 'index']);
     Route::post('/admin/courts', [AdminCourtController::class, 'store']);
     Route::delete('/admin/courts/{court}', [AdminCourtController::class, 'destroy']);
+
+    Route::get('/admin/promotions', [AdminCourtPromotionController::class, 'index']);
+    Route::post('/admin/promotions', [AdminCourtPromotionController::class, 'store']);
+    Route::patch('/admin/promotions/{promotion}/cancel', [AdminCourtPromotionController::class, 'cancel']);
+    Route::get('/admin/users', [AdminUserController::class, 'index']);
 });

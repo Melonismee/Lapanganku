@@ -7,18 +7,18 @@ import DashboardLayout from "./DashboardLayout";
 import DashboardHero from "./DashboardHero";
 import DashboardCourts from "./DashboardCourts";
 import MembershipPromoCard from "./MembershipPromoCard";
-import FeaturedCourts from "./FeaturedCourts";
+import FeaturedCourtsBillboard from "./FeaturedCourtsBillboard";
 
+import CategoryFilter from "@/features/courts/CategoryFilter";
 import useCourts from "@/features/courts/useCourts";
 import { getUser } from "@/features/auth/authService";
-import { getFeaturedCourts } from "@/features/courts/courtService";
 
 export default function DashboardPage() {
     const router = useRouter();
 
     const { courts, setCategory, category } = useCourts();
+
     const [checkingAuth, setCheckingAuth] = useState(true);
-    const [featuredCourts, setFeaturedCourts] = useState([]);
     const [user, setUser] = useState(null);
 
     const isMembershipActive = (currentUser) => {
@@ -39,7 +39,9 @@ export default function DashboardPage() {
         const checkAuth = async () => {
             try {
                 const response = await getUser();
-                setUser(response.data || response);
+                const currentUser = response.data?.user || response.data || response;
+
+                setUser(currentUser);
             } catch (error) {
                 router.push("/login");
             } finally {
@@ -49,19 +51,6 @@ export default function DashboardPage() {
 
         checkAuth();
     }, [router]);
-
-    useEffect(() => {
-        const loadFeatured = async () => {
-            try {
-                const res = await getFeaturedCourts();
-                setFeaturedCourts(res.data || []);
-            } catch (error) {
-                setFeaturedCourts([]);
-            }
-        };
-
-        loadFeatured();
-    }, []);
 
     if (checkingAuth) {
         return (
@@ -75,23 +64,32 @@ export default function DashboardPage() {
 
     return (
         <DashboardLayout>
-            <DashboardHero
-                setCategory={setCategory}
-                category={category}
-                isMember={membershipActive}
-                membershipUntil={user?.membership_until}
-            />
+            <div className="bg-slate-50">
+                <DashboardHero
+                    isMember={membershipActive}
+                    membershipUntil={user?.membership_until}
+                />
 
-            {!membershipActive && (
-                <div className="-mt-28 px-4 md:-mt-24">
-                    <MembershipPromoCard />
-                </div>
-            )}
+                <main className="mx-auto max-w-7xl px-4 pb-12 pt-4">
+                    {!membershipActive && (
+                        <div className="mx-auto max-w-5xl">
+                            <MembershipPromoCard />
+                        </div>
+                    )}
 
-            <main className="mx-auto max-w-7xl px-4 pb-12 pt-14 space-y-12">
-                <FeaturedCourts courts={featuredCourts} category={category} />
-                <DashboardCourts courts={courts} />
-            </main>
+                    <section className="mt-10">
+                        <FeaturedCourtsBillboard />
+                    </section>
+
+                    <section className="mt-12">
+                        <DashboardCourts
+                            courts={courts}
+                            setCategory={setCategory}
+                            category={category}
+                        />
+                    </section>
+                </main>
+            </div>
         </DashboardLayout>
     );
 }

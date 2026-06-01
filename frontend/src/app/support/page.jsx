@@ -4,6 +4,7 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { sendSupportMessage } from "@/features/support/supportService";
+import MembershipPromoCard from "@/features/dashboard/MembershipPromoCard";
 
 const initialMessages = [
     {
@@ -111,6 +112,93 @@ export default function SupportPage() {
                         </form>
                     </div>
                 </section>
+
+                <section className="mt-8">
+                    <MembershipPromoCard />
+                </section>
+
+                <section className="mt-8 bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
+                    <p className="text-green-600 font-bold text-sm">
+                        Contact Perusahaan
+                    </p>
+
+                    <h2 className="text-4xl md:text-5xl font-black text-slate-900 mt-2">
+                        Untuk Owner Lapangan
+                    </h2>
+
+                    <p className="text-gray-600 mt-3">
+                        Jika kamu pemilik lapangan dan ingin menambahkan lapangan ke
+                        Lapanganku atau ingin mempromosikan lapangan di bagian
+                        Recommendation, silakan hubungi admin perusahaan.
+                    </p>
+
+                    <div className="mt-8 border border-gray-100 rounded-2xl bg-slate-50 p-6">
+                        <div className="rounded-2xl bg-white text-slate-800 border border-gray-100 px-4 py-3 text-sm">
+                            Kami membuka kerja sama untuk owner lapangan yang ingin
+                            mendaftarkan lapangannya ke Lapanganku atau mempromosikan
+                            lapangannya agar tampil di dashboard user.
+                        </div>
+
+                        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="rounded-2xl bg-white border border-gray-100 px-5 py-4">
+                                <p className="text-sm font-bold text-green-600">
+                                    Tambahkan Lapangan
+                                </p>
+
+                                <p className="mt-2 text-sm text-gray-600">
+                                    Hubungi admin untuk mendaftarkan lapangan agar bisa
+                                    tampil dan dibooking melalui Lapanganku.
+                                </p>
+                            </div>
+
+                            <div className="rounded-2xl bg-white border border-gray-100 px-5 py-4">
+                                <p className="text-sm font-bold text-green-600">
+                                    Promosi Lapangan
+                                </p>
+
+                                <p className="mt-2 text-sm text-gray-600">
+                                    Ajukan promosi agar lapangan tampil di bagian
+                                    Recommendation pada dashboard user.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 rounded-2xl bg-white border border-gray-100 px-5 py-4">
+                            <p className="text-sm font-bold text-gray-500">
+                                Kontak Admin
+                            </p>
+
+                            <p className="mt-2 font-black text-slate-900">
+                                admin@lapanganku.com
+                            </p>
+
+                            <p className="mt-1 text-gray-600">
+                                WhatsApp: 0812-3456-7890
+                            </p>
+                        </div>
+
+                        <div className="mt-6 flex flex-col gap-3 md:flex-row">
+                            <a
+                                href="https://wa.me/6281234567890?text=Halo%20Admin%20Lapanganku,%20saya%20ingin%20menambahkan%20lapangan%20saya."
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex-1 rounded-xl bg-green-500 px-6 py-3 text-center text-sm font-bold text-white hover:bg-green-600"
+                            >
+                                Tambahkan Lapangan
+                            </a>
+
+                            <a
+                                href="https://wa.me/6281234567890?text=Halo%20Admin%20Lapanganku,%20saya%20ingin%20mempromosikan%20lapangan%20saya."
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex-1 rounded-xl bg-slate-900 px-6 py-3 text-center text-sm font-bold text-white hover:bg-green-600"
+                            >
+                                Ajukan Promosi
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
             </main>
 
             <Footer />

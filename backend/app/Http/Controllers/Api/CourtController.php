@@ -54,7 +54,7 @@ class CourtController extends Controller
     {
         $today = now()->toDateString();
 
-        $courts = Court::with('category')
+        $courts = Court::with(['category', 'activePromotion'])
             ->whereHas('promotions', function ($query) use ($today) {
                 $query->where('status', 'active')
                     ->whereDate('start_date', '<=', $today)
@@ -62,6 +62,8 @@ class CourtController extends Controller
             })
             ->get();
 
-        return $courts;
+        return response()->json([
+            'courts' => $courts,
+        ]);
     }
 }

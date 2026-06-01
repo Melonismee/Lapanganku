@@ -1,21 +1,39 @@
+import CategoryFilter from "@/features/courts/CategoryFilter";
 import CourtCard from "@/features/courts/CourtCard";
 
-export default function DashboardCourts({ courts }) {
+export default function DashboardCourts({ courts, setCategory, category }) {
     return (
-        <section className="max-w-7xl mx-auto px-8">
-            <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-black text-slate-900">
-                    Nearby Courts
-                </h2>
+        <section>
+            <div className="mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                <div>
+                    <p className="text-sm font-bold uppercase text-green-600">
+                        Live Now
+                    </p>
 
+                    <h2 className="mt-1 text-3xl font-black text-slate-950">
+                        Nearby Courts
+                    </h2>
+                </div>
+
+                <CategoryFilter
+                    setCategory={setCategory}
+                    active={category}
+                />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-                {courts.map(court => (
-                    <CourtCard key={court.id} court={court} />
-                ))}
-            </div>
-
+            {courts.length > 0 ? (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                    {courts.map((court) => (
+                        <CourtCard key={court.id} court={court} />
+                    ))}
+                </div>
+            ) : (
+                <div className="rounded-3xl border border-gray-100 bg-white p-8 text-center">
+                    <p className="font-semibold text-gray-500">
+                        Tidak ada lapangan untuk kategori ini.
+                    </p>
+                </div>
+            )}
         </section>
     );
 }

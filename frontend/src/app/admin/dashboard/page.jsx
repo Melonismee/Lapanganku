@@ -58,7 +58,7 @@ export default function AdminDashboardPage() {
                         </h3>
 
                         <p className="text-gray-500 mt-2">
-                            Lihat booking user dan konfirmasi pembayaran QRIS.
+                            Lihat dan pantau data booking user.
                         </p>
 
                         <p className="mt-5 font-bold text-green-600">
@@ -95,8 +95,26 @@ export default function AdminDashboardPage() {
                             Lihat data user.
                         </p>
 
-                        <p className="mt-5 font-bold text-gray-400">
-                            Nanti dibuat
+                        <p className="mt-5 font-bold text-green-600">
+                            Buka halaman
+                        </p>
+
+                    </button>
+
+                    <button
+                        onClick={() => router.push("/admin/promotions")}
+                        className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-left hover:shadow-md transition"
+                    >
+                        <h3 className="text-xl font-black text-slate-900">
+                            Kelola Promosi
+                        </h3>
+
+                        <p className="text-gray-500 mt-2">
+                            Pilih lapangan yang akan ditampilkan sebagai billboard di dashboard user.
+                        </p>
+
+                        <p className="mt-5 font-bold text-green-600">
+                            Buka halaman
                         </p>
                     </button>
                 </section>

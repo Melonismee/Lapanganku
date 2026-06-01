@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-    getAdminBookings,
-    confirmPayment,
-} from "@/features/admin/adminBookingService";
+import { getAdminBookings } from "@/features/admin/adminBookingService";
 import { getUser } from "@/features/auth/authService";
 import AdminNavbar from "@/components/AdminNavbar";
 
@@ -50,26 +47,6 @@ export default function AdminBookingsPage() {
         checkAdmin();
     }, [router]);
 
-    const handleConfirmPayment = async (bookingId) => {
-        const confirmAction = confirm(
-            "Yakin ingin mengonfirmasi pembayaran booking ini?"
-        );
-
-        if (!confirmAction) {
-            return;
-        }
-
-        try {
-            await confirmPayment(bookingId);
-            await loadBookings();
-
-            alert("Pembayaran berhasil dikonfirmasi.");
-        } catch (error) {
-            console.log(error.response);
-            alert(error.response?.data?.message || "Gagal konfirmasi pembayaran.");
-        }
-    };
-
     const formatRupiah = (value) => {
         return Number(value || 0).toLocaleString("id-ID");
     };
@@ -92,7 +69,7 @@ export default function AdminBookingsPage() {
         }
 
         if (booking.status === "confirmed" || booking.payment?.status === "paid") {
-            return "Sudah Dibayar";
+            return "Aktif";
         }
 
         return "Menunggu Pembayaran";
@@ -124,8 +101,7 @@ export default function AdminBookingsPage() {
                     </h1>
 
                     <p className="text-gray-600 mt-2">
-                        Lihat semua booking user dan konfirmasi pembayaran QRIS
-                        manual.
+                        Lihat dan pantau semua data booking user.
                     </p>
                 </section>
 
@@ -221,25 +197,25 @@ export default function AdminBookingsPage() {
                                         </p>
 
                                         <p className="mt-2 text-xs font-semibold text-gray-500">
-                                            Biaya admin (2% dari total): Rp {formatRupiah(Math.floor((booking.total_price * 0.02) / 1000) * 1000)}
+                                            Biaya admin (2% dari total): Rp{" "}
+                                            {formatRupiah(
+                                                Math.floor(
+                                                    (booking.total_price * 0.02) / 1000
+                                                ) * 1000
+                                            )}
                                         </p>
 
                                         {booking.status === "pending_payment" &&
                                             booking.payment?.status === "unpaid" && (
-                                                <button
-                                                    onClick={() =>
-                                                        handleConfirmPayment(booking.id)
-                                                    }
-                                                    className="mt-4 bg-green-500 text-black font-black px-5 py-3 rounded-xl hover:bg-green-600 transition"
-                                                >
-                                                    Konfirmasi Pembayaran
-                                                </button>
+                                                <p className="mt-4 text-yellow-600 font-bold">
+                                                    Menunggu pembayaran user
+                                                </p>
                                             )}
 
                                         {(booking.status === "confirmed" ||
                                             booking.payment?.status === "paid") && (
                                             <p className="mt-4 text-green-600 font-bold">
-                                                Pembayaran sudah dikonfirmasi
+                                                Booking aktif
                                             </p>
                                         )}
 

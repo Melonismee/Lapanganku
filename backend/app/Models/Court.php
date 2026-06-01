@@ -39,4 +39,12 @@ class Court extends Model
     {
         return $this->hasMany(CourtPromotion::class);
     }
+
+    public function activePromotion()
+    {
+        return $this->hasOne(CourtPromotion::class)
+            ->where('status', 'active')
+            ->whereDate('start_date', '<=', now())
+            ->whereDate('end_date', '>=', now());
+    }
 }
