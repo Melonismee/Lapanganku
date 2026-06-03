@@ -36,21 +36,6 @@ export default function LoginLayout() {
                         Masuk untuk melanjutkan ke akun Anda
                     </p>
 
-                    {/* GOOGLE LOGIN */}
-                    <a
-                        href="http://localhost:8000/api/auth/google"
-                        className="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 rounded-xl py-3 mb-6 hover:bg-gray-50 transition text-gray-800 font-semibold"
-                    >
-                        Masuk dengan Google
-                    </a>
-
-                    {/* Divider */}
-                    <div className="flex items-center my-6">
-                        <div className="flex-1 h-px bg-gray-300"></div>
-                        <span className="mx-4 text-sm text-gray-500">atau</span>
-                        <div className="flex-1 h-px bg-gray-300"></div>
-                    </div>
-
                     {/* FORM */}
                     <LoginForm />
 
