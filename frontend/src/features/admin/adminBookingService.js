@@ -7,3 +7,11 @@ export const getAdminBookings = async () => {
 export const confirmPayment = async (bookingId) => {
     return api.patch(`/api/admin/bookings/${bookingId}/confirm-payment`);
 };
+
+export const rejectPayment = async (bookingId) => {
+    return api.patch(`/api/admin/bookings/${bookingId}/reject-payment`);
+};
+
+export const cancelAdminBooking = async (bookingId) => {
+    return api.patch(`/api/admin/bookings/${bookingId}/cancel`);
+};

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BookingReceiptModal from "@/components/bookings/BookingReceiptModal";
 import { getUser } from "@/features/auth/authService";
 import {
     getMyBookings,
@@ -16,6 +17,8 @@ export default function BookingsPage() {
     const [bookings, setBookings] = useState([]);
     const [activeTab, setActiveTab] = useState("all");
     const [loading, setLoading] = useState(true);
+    const [selectedReceipt, setSelectedReceipt] = useState(null);
+    const [currentUser, setCurrentUser] = useState(null);
 
     const fetchBookings = async () => {
         const response = await getMyBookings();
@@ -25,7 +28,9 @@ export default function BookingsPage() {
     useEffect(() => {
         const loadBookings = async () => {
             try {
-                await getUser();
+                const userResponse = await getUser();
+                setCurrentUser(userResponse.data?.user || userResponse.data);
+
                 await fetchBookings();
             } catch (error) {
                 console.log(error.response);
@@ -48,7 +53,6 @@ export default function BookingsPage() {
         try {
             await cancelBooking(bookingId);
             await fetchBookings();
-
             alert("Booking berhasil dibatalkan.");
         } catch (error) {
             console.log(error.response);
@@ -64,11 +68,15 @@ export default function BookingsPage() {
         if (!date) return "-";
 
         return new Date(date).toLocaleDateString("id-ID", {
-            weekday: "long",
+            weekday: "short",
             day: "numeric",
             month: "long",
             year: "numeric",
         });
+    };
+
+    const getAdminFee = (total) => {
+        return Math.floor((Number(total || 0) * 0.02) / 1000) * 1000;
     };
 
     const isHistory = (booking) => {
@@ -81,6 +89,46 @@ export default function BookingsPage() {
         return bookingDate < today;
     };
 
+    const getBookingDisplayStatus = (booking) => {
+        if (booking.status === "cancelled") {
+            return {
+                text: "Dibatalkan",
+                badgeClass: "bg-red-100 text-red-600",
+                paymentText: "Dibatalkan",
+            };
+        }
+
+        if (booking.status === "confirmed" || booking.payment?.status === "paid") {
+            return {
+                text: "Sudah Dibayar",
+                badgeClass: "bg-green-100 text-green-600",
+                paymentText: "Sudah Dibayar",
+            };
+        }
+
+        if (booking.payment?.status === "waiting_confirmation") {
+            return {
+                text: "Menunggu Validasi",
+                badgeClass: "bg-blue-100 text-blue-600",
+                paymentText: "Menunggu Validasi Admin",
+            };
+        }
+
+        if (booking.payment?.status === "rejected") {
+            return {
+                text: "Bukti Ditolak",
+                badgeClass: "bg-red-100 text-red-600",
+                paymentText: "Bukti Ditolak",
+            };
+        }
+
+        return {
+            text: "Belum Dibayar",
+            badgeClass: "bg-yellow-100 text-yellow-600",
+            paymentText: "Belum Dibayar",
+        };
+    };
+
     const filteredBookings = bookings.filter((booking) => {
         if (activeTab === "all") {
             return true;
@@ -89,7 +137,9 @@ export default function BookingsPage() {
         if (activeTab === "unpaid") {
             return (
                 booking.status === "pending_payment" &&
-                booking.payment?.status === "unpaid"
+                ["unpaid", "waiting_confirmation", "rejected"].includes(
+                    booking.payment?.status
+                )
             );
         }
 
@@ -110,30 +160,6 @@ export default function BookingsPage() {
 
         return true;
     });
-
-    const statusBadge = (booking) => {
-        if (booking.status === "cancelled") {
-            return "bg-red-100 text-red-600";
-        }
-
-        if (booking.status === "confirmed" || booking.payment?.status === "paid") {
-            return "bg-green-100 text-green-600";
-        }
-
-        return "bg-yellow-100 text-yellow-600";
-    };
-
-    const statusText = (booking) => {
-        if (booking.status === "cancelled") {
-            return "Dibatalkan";
-        }
-
-        if (booking.status === "confirmed" || booking.payment?.status === "paid") {
-            return "Sudah Dibayar";
-        }
-
-        return "Belum Dibayar";
-    };
 
     const tabs = [
         { key: "all", label: "Semua" },
@@ -192,98 +218,176 @@ export default function BookingsPage() {
                     </div>
                 ) : (
                     <div className="space-y-5">
-                        {filteredBookings.map((booking) => (
-                            <div
-                                key={booking.id}
-                                className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5"
-                            >
-                                <div>
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <h2 className="text-xl font-black text-slate-900">
-                                            {booking.court?.name}
-                                        </h2>
+                        {filteredBookings.map((booking) => {
+                            const displayStatus = getBookingDisplayStatus(booking);
 
-                                        <span
-                                            className={`px-3 py-1 rounded-full text-xs font-black ${statusBadge(booking)}`}
-                                        >
-                                            {statusText(booking)}
-                                        </span>
+                            const canPay =
+                                booking.status === "pending_payment" &&
+                                booking.payment?.status === "unpaid";
+
+                            const canUploadAgain =
+                                booking.status === "pending_payment" &&
+                                booking.payment?.status === "rejected";
+
+                            const isWaitingValidation =
+                                booking.status === "pending_payment" &&
+                                booking.payment?.status === "waiting_confirmation";
+
+                            const canOpenReceipt =
+                                booking.status === "confirmed" ||
+                                booking.payment?.status === "paid";
+
+                            const canCancel =
+                                booking.status === "pending_payment" &&
+                                booking.payment?.status !== "waiting_confirmation";
+
+                            return (
+                                <div
+                                    key={booking.id}
+                                    className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5"
+                                >
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <h2 className="text-xl font-black text-slate-900">
+                                                {booking.court?.name}
+                                            </h2>
+
+                                            <span
+                                                className={`px-3 py-1 rounded-full text-xs font-black ${displayStatus.badgeClass}`}
+                                            >
+                                                {displayStatus.text}
+                                            </span>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-2 text-sm text-gray-600">
+                                            <p>
+                                                <span className="font-bold text-slate-800">
+                                                    Kategori:
+                                                </span>{" "}
+                                                {booking.court?.category?.name || "-"}
+                                            </p>
+
+                                            <p>
+                                                <span className="font-bold text-slate-800">
+                                                    Tanggal:
+                                                </span>{" "}
+                                                {formatDate(booking.booking_date)}
+                                            </p>
+
+                                            <p>
+                                                <span className="font-bold text-slate-800">
+                                                    Jam:
+                                                </span>{" "}
+                                                {booking.start_time} - {booking.end_time}
+                                            </p>
+
+                                            <p>
+                                                <span className="font-bold text-slate-800">
+                                                    Pembayaran:
+                                                </span>{" "}
+                                                {displayStatus.paymentText}
+                                            </p>
+                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
-                                        <p>
-                                            <span className="font-bold text-slate-800">
-                                                Kategori:
-                                            </span>{" "}
-                                            {booking.court?.category?.name || "-"}
+                                    <div className="lg:text-right min-w-[260px]">
+                                        <p className="text-sm text-gray-500 font-semibold">
+                                            Total Bayar
                                         </p>
 
-                                        <p>
-                                            <span className="font-bold text-slate-800">
-                                                Tanggal:
-                                            </span>{" "}
-                                            {formatDate(booking.booking_date)}
+                                        <p className="text-3xl font-black text-green-600">
+                                            Rp {formatRupiah(booking.total_price)}
                                         </p>
 
-                                        <p>
-                                            <span className="font-bold text-slate-800">
-                                                Jam:
-                                            </span>{" "}
-                                            {booking.start_time} - {booking.end_time}
+                                        <p className="mt-2 text-xs font-semibold text-gray-500">
+                                            Biaya admin (2% dari total): Rp{" "}
+                                            {formatRupiah(getAdminFee(booking.total_price))}
                                         </p>
 
-                                        <p>
-                                            <span className="font-bold text-slate-800">
-                                                Pembayaran:
-                                            </span>{" "}
-                                            {booking.payment?.status || "-"}
-                                        </p>
+                                        <div className="mt-5 flex flex-col gap-3">
+                                            {canPay && (
+                                                <>
+                                                    <button
+                                                        onClick={() =>
+                                                            router.push(`/payment/booking/${booking.id}`)
+                                                        }
+                                                        className="bg-green-500 text-black font-black px-5 py-3 rounded-xl hover:bg-green-600 transition"
+                                                    >
+                                                        Bayar Sekarang
+                                                    </button>
+
+                                                    {canCancel && (
+                                                        <button
+                                                            onClick={() =>
+                                                                handleCancelBooking(booking.id)
+                                                            }
+                                                            className="bg-red-500 text-white font-black px-5 py-3 rounded-xl hover:bg-red-600 transition"
+                                                        >
+                                                            Batalkan Booking
+                                                        </button>
+                                                    )}
+                                                </>
+                                            )}
+
+                                            {canUploadAgain && (
+                                                <>
+                                                    <button
+                                                        onClick={() =>
+                                                            router.push(`/payment/booking/${booking.id}`)
+                                                        }
+                                                        className="bg-red-500 text-white font-black px-5 py-3 rounded-xl hover:bg-red-600 transition"
+                                                    >
+                                                        Upload Ulang Bukti
+                                                    </button>
+
+                                                    {canCancel && (
+                                                        <button
+                                                            onClick={() =>
+                                                                handleCancelBooking(booking.id)
+                                                            }
+                                                            className="bg-slate-900 text-white font-black px-5 py-3 rounded-xl hover:bg-slate-800 transition"
+                                                        >
+                                                            Batalkan Booking
+                                                        </button>
+                                                    )}
+                                                </>
+                                            )}
+
+                                            {isWaitingValidation && (
+                                                <button
+                                                    onClick={() =>
+                                                        router.push(`/payment/booking/${booking.id}`)
+                                                    }
+                                                    className="bg-blue-100 text-blue-700 font-black px-5 py-3 rounded-xl hover:bg-blue-200 transition"
+                                                >
+                                                    Lihat Pembayaran
+                                                </button>
+                                            )}
+
+                                            {canOpenReceipt && (
+                                                <button
+                                                    onClick={() => setSelectedReceipt(booking)}
+                                                    className="bg-emerald-100 text-emerald-700 font-black px-5 py-3 rounded-xl hover:bg-emerald-200 transition"
+                                                >
+                                                    Lihat Struk
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-
-                                <div className="lg:text-right">
-                                    <p className="text-sm text-gray-500 font-semibold">
-                                        Total Bayar
-                                    </p>
-
-                                    <p className="text-2xl font-black text-green-600">
-                                        Rp {formatRupiah(booking.total_price)}
-                                    </p>
-
-                                    <p className="mt-2 text-xs font-semibold text-gray-500">
-                                        Biaya admin (2% dari total): Rp {formatRupiah(Math.floor((booking.total_price * 0.02) / 1000) * 1000)}
-                                    </p>
-
-                                    {booking.status === "pending_payment" &&
-                                        booking.payment?.status === "unpaid" && (
-                                            <div className="mt-4 flex flex-col gap-3">
-                                                <button
-                                                    onClick={() =>
-                                                        router.push(
-                                                            `/payment/booking/${booking.id}`
-                                                        )
-                                                    }
-                                                    className="bg-green-500 text-black font-black px-5 py-3 rounded-xl hover:bg-green-600 transition"
-                                                >
-                                                    Bayar Sekarang
-                                                </button>
-
-                                                <button
-                                                    onClick={() =>
-                                                        handleCancelBooking(booking.id)
-                                                    }
-                                                    className="bg-red-500 text-white font-black px-5 py-3 rounded-xl hover:bg-red-600 transition"
-                                                >
-                                                    Batalkan Booking
-                                                </button>
-                                            </div>
-                                        )}
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </main>
+
+            {selectedReceipt && (
+                <BookingReceiptModal
+                    booking={selectedReceipt}
+                    user={currentUser}
+                    onClose={() => setSelectedReceipt(null)}
+                />
+            )}
 
             <Footer />
         </div>

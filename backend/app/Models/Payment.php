@@ -16,6 +16,10 @@ class Payment extends Model
         'paid_at',
     ];
 
+    protected $casts = [
+        'paid_at' => 'datetime',
+    ];
+
     public function booking()
     {
         return $this->belongsTo(Booking::class);

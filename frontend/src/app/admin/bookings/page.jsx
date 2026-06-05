@@ -2,9 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getAdminBookings } from "@/features/admin/adminBookingService";
+import {
+    getAdminBookings,
+    confirmPayment,
+    rejectPayment,
+    cancelAdminBooking,
+} from "@/features/admin/adminBookingService";
 import { getUser } from "@/features/auth/authService";
 import AdminNavbar from "@/components/AdminNavbar";
+import AdminBookingCard from "@/components/admin/AdminBookingCard";
+import BookingReceiptModal from "@/components/bookings/BookingReceiptModal";
 
 export default function AdminBookingsPage() {
     const router = useRouter();
@@ -12,11 +19,17 @@ export default function AdminBookingsPage() {
     const [checkingAuth, setCheckingAuth] = useState(true);
     const [bookings, setBookings] = useState([]);
     const [loadingBookings, setLoadingBookings] = useState(true);
+    const [processingId, setProcessingId] = useState(null);
+    const [selectedReceipt, setSelectedReceipt] = useState(null);
 
     const loadBookings = async () => {
         try {
+            setLoadingBookings(true);
+
             const response = await getAdminBookings();
-            setBookings(response.data.bookings || []);
+            const data = response.data?.bookings || response.data || [];
+
+            setBookings(data);
         } catch (error) {
             console.log(error.response);
         } finally {
@@ -47,32 +60,52 @@ export default function AdminBookingsPage() {
         checkAdmin();
     }, [router]);
 
-    const formatRupiah = (value) => {
-        return Number(value || 0).toLocaleString("id-ID");
+    const handleConfirmPayment = async (bookingId) => {
+        try {
+            setProcessingId(bookingId);
+            await confirmPayment(bookingId);
+            await loadBookings();
+        } catch (error) {
+            alert(error.response?.data?.message || "Gagal validasi pembayaran.");
+        } finally {
+            setProcessingId(null);
+        }
     };
 
-    const getStatusBadge = (booking) => {
-        if (booking.status === "cancelled") {
-            return "bg-red-100 text-red-600";
+    const handleRejectPayment = async (bookingId) => {
+        const isConfirmed = confirm("Yakin bukti pembayaran ini tidak valid?");
+
+        if (!isConfirmed) {
+            return;
         }
 
-        if (booking.status === "confirmed" || booking.payment?.status === "paid") {
-            return "bg-green-100 text-green-600";
+        try {
+            setProcessingId(bookingId);
+            await rejectPayment(bookingId);
+            await loadBookings();
+        } catch (error) {
+            alert(error.response?.data?.message || "Gagal menolak pembayaran.");
+        } finally {
+            setProcessingId(null);
         }
-
-        return "bg-yellow-100 text-yellow-600";
     };
 
-    const getStatusText = (booking) => {
-        if (booking.status === "cancelled") {
-            return "Dibatalkan";
+    const handleCancelBooking = async (bookingId) => {
+        const isConfirmed = confirm("Yakin ingin membatalkan booking ini?");
+
+        if (!isConfirmed) {
+            return;
         }
 
-        if (booking.status === "confirmed" || booking.payment?.status === "paid") {
-            return "Aktif";
+        try {
+            setProcessingId(bookingId);
+            await cancelAdminBooking(bookingId);
+            await loadBookings();
+        } catch (error) {
+            alert(error.response?.data?.message || "Gagal membatalkan booking.");
+        } finally {
+            setProcessingId(null);
         }
-
-        return "Menunggu Pembayaran";
     };
 
     if (checkingAuth) {
@@ -87,11 +120,11 @@ export default function AdminBookingsPage() {
         <div className="min-h-screen bg-slate-100">
             <AdminNavbar />
 
-            <main className="max-w-7xl mx-auto p-8">
-                <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+            <main className="mx-auto max-w-7xl p-8">
+                <section className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
                     <button
                         onClick={() => router.push("/admin/dashboard")}
-                        className="text-sm font-bold text-gray-500 hover:text-slate-900 mb-5"
+                        className="mb-5 text-sm font-bold text-gray-500 hover:text-slate-900"
                     >
                         ← Kembali ke Dashboard
                     </button>
@@ -100,137 +133,50 @@ export default function AdminBookingsPage() {
                         Kelola Booking
                     </h1>
 
-                    <p className="text-gray-600 mt-2">
-                        Lihat dan pantau semua data booking user.
+                    <p className="mt-2 text-gray-600">
+                        Validasi bukti pembayaran, lihat struk booking, dan batalkan booking jika diperlukan.
                     </p>
                 </section>
 
-                <section className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                    <h2 className="text-2xl font-black text-slate-900 mb-6">
+                <section className="mt-8 rounded-3xl border border-gray-100 bg-white p-8 shadow-sm">
+                    <h2 className="mb-6 text-2xl font-black text-slate-900">
                         Daftar Booking
                     </h2>
 
                     {loadingBookings ? (
-                        <p className="text-gray-500 font-semibold">
+                        <p className="font-semibold text-gray-500">
                             Loading booking...
                         </p>
                     ) : bookings.length === 0 ? (
-                        <div className="bg-slate-50 rounded-2xl p-8 text-center">
-                            <p className="text-gray-500 font-semibold">
+                        <div className="rounded-2xl bg-slate-50 p-8 text-center">
+                            <p className="font-semibold text-gray-500">
                                 Belum ada booking.
                             </p>
                         </div>
                     ) : (
-                        <div className="space-y-5">
+                        <div className="space-y-4">
                             {bookings.map((booking) => (
-                                <div
+                                <AdminBookingCard
                                     key={booking.id}
-                                    className="border border-gray-100 rounded-2xl p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5"
-                                >
-                                    <div>
-                                        <div className="flex flex-wrap items-center gap-3 mb-3">
-                                            <h3 className="text-xl font-black text-slate-900">
-                                                {booking.court?.name || "Lapangan"}
-                                            </h3>
-
-                                            <span
-                                                className={`px-3 py-1 rounded-full text-xs font-black ${getStatusBadge(
-                                                    booking
-                                                )}`}
-                                            >
-                                                {getStatusText(booking)}
-                                            </span>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
-                                            <p>
-                                                <span className="font-bold text-slate-800">
-                                                    User:
-                                                </span>{" "}
-                                                {booking.user?.name || "-"}
-                                            </p>
-
-                                            <p>
-                                                <span className="font-bold text-slate-800">
-                                                    Email:
-                                                </span>{" "}
-                                                {booking.user?.email || "-"}
-                                            </p>
-
-                                            <p>
-                                                <span className="font-bold text-slate-800">
-                                                    Kategori:
-                                                </span>{" "}
-                                                {booking.court?.category?.name || "-"}
-                                            </p>
-
-                                            <p>
-                                                <span className="font-bold text-slate-800">
-                                                    Tanggal:
-                                                </span>{" "}
-                                                {booking.booking_date}
-                                            </p>
-
-                                            <p>
-                                                <span className="font-bold text-slate-800">
-                                                    Jam:
-                                                </span>{" "}
-                                                {booking.start_time} - {booking.end_time}
-                                            </p>
-
-                                            <p>
-                                                <span className="font-bold text-slate-800">
-                                                    Status Payment:
-                                                </span>{" "}
-                                                {booking.payment?.status || "-"}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="lg:text-right">
-                                        <p className="text-sm text-gray-500 font-semibold">
-                                            Total Bayar
-                                        </p>
-
-                                        <p className="text-2xl font-black text-green-600">
-                                            Rp {formatRupiah(booking.total_price)}
-                                        </p>
-
-                                        <p className="mt-2 text-xs font-semibold text-gray-500">
-                                            Biaya admin (2% dari total): Rp{" "}
-                                            {formatRupiah(
-                                                Math.floor(
-                                                    (booking.total_price * 0.02) / 1000
-                                                ) * 1000
-                                            )}
-                                        </p>
-
-                                        {booking.status === "pending_payment" &&
-                                            booking.payment?.status === "unpaid" && (
-                                                <p className="mt-4 text-yellow-600 font-bold">
-                                                    Menunggu pembayaran user
-                                                </p>
-                                            )}
-
-                                        {(booking.status === "confirmed" ||
-                                            booking.payment?.status === "paid") && (
-                                            <p className="mt-4 text-green-600 font-bold">
-                                                Booking aktif
-                                            </p>
-                                        )}
-
-                                        {booking.status === "cancelled" && (
-                                            <p className="mt-4 text-red-600 font-bold">
-                                                Booking dibatalkan
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
+                                    booking={booking}
+                                    isProcessing={processingId === booking.id}
+                                    onConfirmPayment={handleConfirmPayment}
+                                    onRejectPayment={handleRejectPayment}
+                                    onCancelBooking={handleCancelBooking}
+                                    onOpenReceipt={setSelectedReceipt}
+                                />
                             ))}
                         </div>
                     )}
                 </section>
             </main>
+
+            {selectedReceipt && (
+                <BookingReceiptModal
+                    booking={selectedReceipt}
+                    onClose={() => setSelectedReceipt(null)}
+                />
+            )}
         </div>
     );
 }

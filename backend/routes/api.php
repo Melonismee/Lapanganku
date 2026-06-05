@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\MembershipController;
 use App\Http\Controllers\Api\Admin\AdminCourtPromotionController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\PaymentController;
+
 
 Route::middleware(['auth:sanctum'])->get('/user', [UserController::class, 'me']);
 
@@ -30,6 +32,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/bookings/{booking}', [BookingController::class, 'show']);
     Route::get('/my-bookings', [BookingController::class, 'myBookings']);
     Route::patch('/bookings/{booking}/cancel', [BookingController::class, 'cancel']);
+    Route::post('/bookings/{booking}/upload-proof', [PaymentController::class, 'uploadProof']);
     Route::patch('/bookings/{booking}/simulate-payment', [BookingController::class, 'simulatePayment']);
 
     Route::post('/membership/simulate-payment', [MembershipController::class, 'simulatePayment']);
@@ -38,6 +41,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/admin/bookings', [AdminBookingController::class, 'index']);
     Route::patch('/admin/bookings/{booking}/confirm-payment', [AdminBookingController::class, 'confirmPayment']);
+    Route::patch('/admin/bookings/{booking}/reject-payment', [AdminBookingController::class, 'rejectPayment']);
+    Route::patch('/admin/bookings/{booking}/cancel', [AdminBookingController::class, 'cancelBooking']);
 
     Route::get('/admin/courts', [AdminCourtController::class, 'index']);
     Route::post('/admin/courts', [AdminCourtController::class, 'store']);
