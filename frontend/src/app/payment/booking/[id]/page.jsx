@@ -23,7 +23,7 @@ export default function PaymentBookingPage() {
     };
 
     const getAdminFee = (total) => {
-        const fee = Number(total || 0) * 0.02;
+        const fee = Number(total || 0) * 0.04;
         return Math.floor(fee / 1000) * 1000;
     };
 
@@ -200,7 +200,7 @@ export default function PaymentBookingPage() {
                                     </p>
 
                                     <p className="mt-3 text-gray-500">
-                                        Biaya admin (2% dari total)
+                                        Biaya admin (4% dari total)
                                     </p>
                                     <p className="font-bold text-slate-900">
                                         Rp {formatRupiah(getAdminFee(booking.total_price))}

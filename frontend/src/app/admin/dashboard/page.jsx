@@ -102,6 +102,23 @@ export default function AdminDashboardPage() {
                     </button>
 
                     <button
+                        onClick={() => router.push("/admin/memberships")}
+                        className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-left hover:shadow-md transition"
+                    >
+                        <h3 className="text-xl font-black text-slate-900">
+                            Kelola Membership
+                        </h3>
+
+                        <p className="text-gray-500 mt-2">
+                            Validasi bukti pembayaran membership user.
+                        </p>
+
+                        <p className="mt-5 font-bold text-green-600">
+                            Buka halaman
+                        </p>
+                    </button>
+
+                    <button
                         onClick={() => router.push("/admin/promotions")}
                         className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-left hover:shadow-md transition"
                     >

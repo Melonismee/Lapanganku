@@ -58,7 +58,7 @@ export default function AdminBookingCard({
     };
 
     const adminFee =
-        Math.floor((Number(booking.total_price || 0) * 0.02) / 1000) * 1000;
+        Math.floor((Number(booking.total_price || 0) * 0.04) / 1000) * 1000;
 
     const canValidate =
         booking.status === "pending_payment" &&

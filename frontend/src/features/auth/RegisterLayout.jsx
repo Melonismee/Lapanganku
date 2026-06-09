@@ -1,6 +1,7 @@
 "use client";
 
 import RegisterForm from "./RegisterForm";
+import LapangankuIcon from "@/components/LapangankuIcon";
 
 export default function RegisterLayout() {
     return (
@@ -10,6 +11,10 @@ export default function RegisterLayout() {
             <div className="hidden md:flex w-1/2 bg-[#0f2a1d] text-white px-12 py-16 flex-col justify-center">
 
                 <div className="max-w-lg">
+                    <div className="mb-8 inline-flex">
+                        <LapangankuIcon className="h-24 w-24" />
+                    </div>
+
                     <h1 className="text-5xl font-black leading-tight tracking-tight">
                         Buat akun di
                         <span className="text-green-400"> Lapanganku</span>

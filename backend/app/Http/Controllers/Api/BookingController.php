@@ -21,6 +21,7 @@ class BookingController extends Controller
         ]);
 
         $user = auth()->user();
+        $user->syncMembershipStatusFromPayments();
 
         $isMembershipActive = $user->is_member &&
             $user->membership_until &&

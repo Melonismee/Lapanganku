@@ -1,48 +1,126 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { simulateMembershipPayment } from "@/features/membership/membershipService";
+import {
+    createMembershipPayment,
+    getMembershipStatus,
+    uploadMembershipProof,
+} from "@/features/membership/membershipService";
 
 export default function MembershipPaymentPage() {
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [membershipPayment, setMembershipPayment] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [proofImage, setProofImage] = useState(null);
+    const [previewImage, setPreviewImage] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
     const [message, setMessage] = useState("");
 
-    const handleSimulatePayment = async () => {
-        if (isSubmitting) {
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadPayment = async () => {
+            try {
+                const current = await getMembershipStatus();
+                let payment = current.data?.membership_payment;
+
+                if (!payment || ["cancelled", "active"].includes(payment.status)) {
+                    const created = await createMembershipPayment();
+                    payment = created.data?.membership_payment;
+                }
+
+                if (isMounted) {
+                    setMembershipPayment(payment);
+                }
+            } catch (error) {
+                if (isMounted) {
+                    setMessage(error.response?.data?.message || "Gagal memuat pembayaran membership.");
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        loadPayment();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    const formatRupiah = (value) => {
+        return Number(value || 0).toLocaleString("id-ID");
+    };
+
+    const getStatusText = (status) => {
+        if (status === "unpaid") return "Belum Dibayar";
+        if (status === "waiting_confirmation") return "Menunggu Validasi Admin";
+        if (status === "rejected") return "Bukti Ditolak";
+        if (status === "active") return "Aktif";
+        if (status === "cancelled") return "Dibatalkan";
+        return status || "-";
+    };
+
+    const handleSelectProof = (event) => {
+        const file = event.target.files[0];
+
+        if (!file) {
+            setProofImage(null);
+            setPreviewImage(null);
             return;
         }
 
-        setIsSubmitting(true);
+        setProofImage(file);
+        setPreviewImage(URL.createObjectURL(file));
+        setMessage("");
+    };
+
+    const handleUploadProof = async (event) => {
+        event.preventDefault();
+
+        if (!proofImage) {
+            setMessage("Pilih foto bukti pembayaran terlebih dahulu.");
+            return;
+        }
+
+        setIsUploading(true);
         setMessage("");
 
         try {
-            const response = await simulateMembershipPayment();
-            const until = response?.data?.membership_until;
+            const response = await uploadMembershipProof(membershipPayment.id, proofImage);
 
-            setMessage(
-                until
-                    ? `Pembayaran berhasil. Membership aktif sampai ${until}.`
-                    : "Pembayaran berhasil. Membership kamu sudah aktif."
-            );
+            setProofImage(null);
+            setPreviewImage(null);
+            setMembershipPayment(response.data?.membership_payment);
+            setMessage("Bukti pembayaran berhasil dikirim. Menunggu validasi admin.");
         } catch (error) {
-            setMessage(
-                error?.response?.data?.message ||
-                    "Pembayaran gagal diproses. Coba lagi ya."
-            );
+            setMessage(error.response?.data?.message || "Gagal mengirim bukti pembayaran.");
         } finally {
-            setIsSubmitting(false);
+            setIsUploading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+                <p className="font-semibold text-gray-600">Loading pembayaran...</p>
+            </div>
+        );
+    }
+
+    const canUploadProof =
+        membershipPayment &&
+        !["waiting_confirmation", "active", "cancelled"].includes(membershipPayment.status);
 
     return (
         <div className="min-h-screen bg-slate-50">
             <Navbar />
 
-            <main className="max-w-4xl mx-auto px-8 py-10">
+            <main className="max-w-5xl mx-auto px-8 py-10">
                 <Link
                     href="/membership"
                     className="mb-6 inline-flex text-sm font-semibold text-gray-500 hover:text-slate-900"
@@ -56,42 +134,111 @@ export default function MembershipPaymentPage() {
                     </h1>
 
                     <p className="text-gray-500 mb-8">
-                        Scan QRIS di bawah ini untuk melanjutkan pembayaran.
+                        Scan QRIS, lalu upload bukti pembayaran agar admin bisa memvalidasi membership.
                     </p>
 
-                    <div className="bg-slate-50 rounded-2xl p-6 text-center">
-                        <button
-                            type="button"
-                            onClick={handleSimulatePayment}
-                            disabled={isSubmitting}
-                            className="mx-auto block rounded-xl border border-transparent focus:outline-none focus:ring-2 focus:ring-green-400"
-                        >
-                            <Image
-                                src="/images/qris.png"
-                                alt="QRIS Pembayaran"
-                                width={320}
-                                height={320}
-                                className="mx-auto rounded-xl border"
-                            />
-                        </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <section className="bg-slate-50 rounded-2xl p-6">
+                            <h2 className="text-xl font-bold text-slate-900 mb-5">
+                                Detail Membership
+                            </h2>
 
-                        <p className="mt-5 text-sm text-gray-600 leading-relaxed">
-                            Membership akan aktif setelah pembayaran dikonfirmasi.
-                        </p>
+                            <div className="space-y-4 text-sm">
+                                <div>
+                                    <p className="text-gray-500">Durasi</p>
+                                    <p className="font-bold text-slate-900">
+                                        {membershipPayment?.duration_days || 30} hari
+                                    </p>
+                                </div>
 
-                        {message && (
-                            <p className="mt-4 text-sm font-semibold text-green-600">
-                                {message}
-                            </p>
-                        )}
+                                <div>
+                                    <p className="text-gray-500">Status Pembayaran</p>
+                                    <p className="font-bold text-yellow-600">
+                                        {getStatusText(membershipPayment?.status)}
+                                    </p>
+                                </div>
 
-                        <a
-                            href="/images/qris.png"
-                            download
-                            className={`mt-6 inline-flex w-full items-center justify-center rounded-xl bg-green-500 py-4 text-black font-black transition ${isSubmitting ? "opacity-60 pointer-events-none" : "hover:bg-green-600"}`}
-                        >
-                            {isSubmitting ? "Memproses..." : "Unduh QR"}
-                        </a>
+                                <div className="border-t pt-4">
+                                    <p className="text-gray-500">Total Bayar</p>
+                                    <p className="text-2xl font-black text-green-600">
+                                        Rp {formatRupiah(membershipPayment?.amount || 29900)}
+                                    </p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section>
+                            <div className="bg-white border rounded-2xl p-6">
+                                <img
+                                    src="/images/qris.png"
+                                    alt="QRIS Pembayaran Membership"
+                                    className="w-72 mx-auto rounded-xl border"
+                                />
+
+                                <button
+                                    onClick={() => {
+                                        const link = document.createElement("a");
+                                        link.href = "/images/qris.png";
+                                        link.download = "qris.png";
+                                        link.click();
+                                    }}
+                                    className="mt-6 w-full bg-green-500 text-black font-black py-4 rounded-xl hover:bg-green-600 transition"
+                                >
+                                    Unduh QR
+                                </button>
+                            </div>
+
+                            <div className="mt-6 bg-white border rounded-2xl p-6">
+                                <h2 className="text-xl font-bold text-slate-900">
+                                    Upload Bukti Pembayaran
+                                </h2>
+
+                                {membershipPayment?.status === "waiting_confirmation" && (
+                                    <div className="mt-4 rounded-xl bg-yellow-50 px-4 py-3 text-sm font-semibold text-yellow-700">
+                                        Bukti pembayaran sudah dikirim. Menunggu validasi admin.
+                                    </div>
+                                )}
+
+                                {membershipPayment?.status === "rejected" && (
+                                    <div className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                                        Bukti pembayaran ditolak. Silakan upload ulang bukti yang benar.
+                                    </div>
+                                )}
+
+                                {canUploadProof && (
+                                    <form onSubmit={handleUploadProof} className="mt-5 space-y-4">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleSelectProof}
+                                            className="block w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-slate-700"
+                                        />
+
+                                        {previewImage && (
+                                            <img
+                                                src={previewImage}
+                                                alt="Preview bukti pembayaran"
+                                                className="w-full max-h-72 rounded-xl border object-contain bg-slate-50"
+                                            />
+                                        )}
+
+                                        <button
+                                            type="submit"
+                                            disabled={isUploading}
+                                            className="w-full bg-slate-900 text-white font-black py-4 rounded-xl hover:bg-slate-800 transition disabled:opacity-60"
+                                        >
+                                            {isUploading ? "Mengirim Bukti..." : "Kirim Bukti Pembayaran"}
+                                        </button>
+                                    </form>
+                                )}
+
+                                {message && (
+                                    <p className="mt-4 text-sm font-semibold text-slate-700">
+                                        {message}
+                                    </p>
+                                )}
+                            </div>
+                        </section>
                     </div>
                 </div>
             </main>

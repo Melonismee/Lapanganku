@@ -13,6 +13,12 @@ const initialMessages = [
     },
 ];
 
+const WHATSAPP_NUMBER = "62895340719657";
+
+const buildWhatsAppUrl = (message) => {
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+};
+
 export default function SupportPage() {
     const [messages, setMessages] = useState(initialMessages);
     const [input, setInput] = useState("");
@@ -158,7 +164,8 @@ export default function SupportPage() {
 
                                 <p className="mt-2 text-sm text-gray-600">
                                     Ajukan promosi agar lapangan tampil di bagian
-                                    Recommendation pada dashboard user.
+                                    Recommendation pada dashboard user. Harga promosi
+                                    mulai dari Rp 39.900 per hari.
                                 </p>
                             </div>
                         </div>
@@ -173,13 +180,15 @@ export default function SupportPage() {
                             </p>
 
                             <p className="mt-1 text-gray-600">
-                                WhatsApp: 0812-3456-7890
+                                WhatsApp: 895-3407-19657
                             </p>
                         </div>
 
                         <div className="mt-6 flex flex-col gap-3 md:flex-row">
                             <a
-                                href="https://wa.me/6281234567890?text=Halo%20Admin%20Lapanganku,%20saya%20ingin%20menambahkan%20lapangan%20saya."
+                                href={buildWhatsAppUrl(
+                                    "Halo Admin Lapanganku, saya dari [nama usaha/owner] ingin menambahkan lapangan ke platform Lapanganku.\n\nNama lapangan:\nLokasi:\nJenis olahraga:\nJumlah lapangan:\nKontak owner:\n\nMohon informasi langkah pendaftarannya. Terima kasih."
+                                )}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="flex-1 rounded-xl bg-green-500 px-6 py-3 text-center text-sm font-bold text-white hover:bg-green-600"
@@ -188,7 +197,9 @@ export default function SupportPage() {
                             </a>
 
                             <a
-                                href="https://wa.me/6281234567890?text=Halo%20Admin%20Lapanganku,%20saya%20ingin%20mempromosikan%20lapangan%20saya."
+                                href={buildWhatsAppUrl(
+                                    "Halo Admin Lapanganku, saya dari [nama usaha/owner] ingin mengajukan promosi lapangan di Lapanganku.\n\nNama lapangan:\nLokasi:\nJenis promosi yang diinginkan:\nPeriode promosi:\nBudget promosi: Rp 39.900 per hari\nKontak owner:\n\nMohon informasi paket dan ketentuannya. Terima kasih."
+                                )}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="flex-1 rounded-xl bg-slate-900 px-6 py-3 text-center text-sm font-bold text-white hover:bg-green-600"

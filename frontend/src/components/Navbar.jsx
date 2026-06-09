@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { logout, getUser } from "@/features/auth/authService";
+import LapangankuIcon from "@/components/LapangankuIcon";
 
 export default function Navbar() {
     const router = useRouter();
@@ -51,8 +52,9 @@ export default function Navbar() {
                 {/* LOGO */}
                 <button
                     onClick={() => router.push("/dashboard")}
-                    className="text-2xl font-black tracking-tight text-slate-900"
+                    className="flex items-center gap-3 text-2xl font-black tracking-tight text-slate-900"
                 >
+                    <LapangankuIcon className="h-10 w-10" />
                     LAPANGANKU
                 </button>
 
@@ -70,6 +72,13 @@ export default function Navbar() {
                         className={`${menuClass(pathname.startsWith("/bookings"))} h-20 flex items-center`}
                     >
                         Bookings
+                    </button>
+
+                    <button
+                        onClick={() => router.push("/about")}
+                        className={`${menuClass(pathname.startsWith("/about"))} h-20 flex items-center`}
+                    >
+                        About
                     </button>
 
                     <button

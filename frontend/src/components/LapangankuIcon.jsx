@@ -1,0 +1,28 @@
+export default function LapangankuIcon({ className = "h-10 w-10" }) {
+    return (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 100 100"
+            className={`text-[#10b85a] drop-shadow-md transition-transform hover:scale-105 ${className}`}
+            aria-hidden="true"
+        >
+            <path
+                fill="currentColor"
+                d="M50 96C45.4 89.5 18 63.9 18 39.4C18 19.7 31.6 7.5 50 7.5S82 19.7 82 39.4C82 63.9 54.6 89.5 50 96Z"
+            />
+
+            <g fill="#FFFFFF">
+                <rect x="30.5" y="18.5" width="39" height="41" rx="5" />
+                <rect x="36" y="24" width="28" height="30" rx="1.5" fill="currentColor" />
+                <rect x="38.8" y="27" width="22.4" height="24" rx="0.8" />
+                <rect x="48.2" y="24" width="3.6" height="30" fill="currentColor" />
+                <rect x="36" y="37.2" width="28" height="3.6" fill="currentColor" />
+            </g>
+
+            <path
+                fill="#FFFFFF"
+                d="M39.2 64.5H60.8L50 78.8Z"
+            />
+        </svg>
+    );
+}

@@ -122,6 +122,7 @@
       <excludeFolder url="file://$MODULE_DIR$/backend/storage/app" />
       <excludeFolder url="file://$MODULE_DIR$/backend/storage/framework" />
       <excludeFolder url="file://$MODULE_DIR$/backend/vendor/laravel/breeze" />
+      <excludeFolder url="file://$MODULE_DIR$/backend/vendor/_laravel_idea" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -205,7 +205,7 @@ export default function CourtDetailPage() {
 
     const price = Number(court?.price_per_hour || 0);
     const subtotal = selectedSlots.length * price;
-    const adminFeeRaw = subtotal > 0 ? (subtotal * 0.02) / 0.98 : 0;
+    const adminFeeRaw = subtotal > 0 ? (subtotal * 0.04) / 0.96 : 0;
     const adminFee = Math.max(0, Math.floor(adminFeeRaw / 1000) * 1000);
     const totalWithAdmin = subtotal + adminFee;
 
@@ -575,7 +575,7 @@ export default function CourtDetailPage() {
 
                         <div className="mt-4 flex justify-between text-sm text-gray-600">
                             <span className="font-semibold">
-                                Biaya admin (2% dari total)
+                                Biaya admin (4% dari total)
                             </span>
 
                             <span className="font-bold text-slate-900">

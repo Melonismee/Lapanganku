@@ -10,19 +10,7 @@ class UserController extends Controller
     public function me(Request $request)
     {
         $user = $request->user();
-
-        if (
-            $user->is_member &&
-            $user->membership_until &&
-            now()->toDateString() > $user->membership_until->toDateString()
-        ) {
-            $user->update([
-                'is_member' => false,
-                'membership_until' => null,
-            ]);
-
-            $user->refresh();
-        }
+        $user->syncMembershipStatusFromPayments();
 
         return response()->json($user);
     }

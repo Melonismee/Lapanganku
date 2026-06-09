@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\AdminBookingController;
 use App\Http\Controllers\Api\Admin\AdminCourtController;
 use App\Http\Controllers\Api\SupportChatController;
 use App\Http\Controllers\Api\MembershipController;
+use App\Http\Controllers\Api\Admin\AdminMembershipController;
 use App\Http\Controllers\Api\Admin\AdminCourtPromotionController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\UserController;
@@ -35,7 +36,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/bookings/{booking}/upload-proof', [PaymentController::class, 'uploadProof']);
     Route::patch('/bookings/{booking}/simulate-payment', [BookingController::class, 'simulatePayment']);
 
-    Route::post('/membership/simulate-payment', [MembershipController::class, 'simulatePayment']);
+    Route::get('/membership/current', [MembershipController::class, 'current']);
+    Route::post('/membership/payments', [MembershipController::class, 'createPayment']);
+    Route::post('/membership/payments/{membershipPayment}/upload-proof', [MembershipController::class, 'uploadProof']);
+    Route::patch('/membership/payments/{membershipPayment}/cancel', [MembershipController::class, 'cancel']);
+    Route::patch('/membership/cancel', [MembershipController::class, 'cancel']);
 
     Route::get('/courts/{court}/booked-slots', [CourtController::class, 'bookedSlots']);
 
@@ -43,6 +48,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::patch('/admin/bookings/{booking}/confirm-payment', [AdminBookingController::class, 'confirmPayment']);
     Route::patch('/admin/bookings/{booking}/reject-payment', [AdminBookingController::class, 'rejectPayment']);
     Route::patch('/admin/bookings/{booking}/cancel', [AdminBookingController::class, 'cancelBooking']);
+
+    Route::get('/admin/membership-payments', [AdminMembershipController::class, 'index']);
+    Route::patch('/admin/membership-payments/{membershipPayment}/confirm', [AdminMembershipController::class, 'confirm']);
+    Route::patch('/admin/membership-payments/{membershipPayment}/reject', [AdminMembershipController::class, 'reject']);
+    Route::patch('/admin/membership-payments/{membershipPayment}/cancel', [AdminMembershipController::class, 'cancel']);
 
     Route::get('/admin/courts', [AdminCourtController::class, 'index']);
     Route::post('/admin/courts', [AdminCourtController::class, 'store']);

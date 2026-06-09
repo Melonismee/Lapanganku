@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function DashboardHero({ isMember, membershipUntil }) {
     const membershipLabel = membershipUntil
         ? new Date(membershipUntil).toLocaleDateString("id-ID", {
@@ -18,7 +20,10 @@ export default function DashboardHero({ isMember, membershipUntil }) {
             <div className="relative z-10 mx-auto max-w-4xl px-4">
                 <div className="mb-4 flex justify-center">
                     {isMember && (
-                        <span className="inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-2 text-xs font-bold text-green-700">
+                        <Link
+                            href="/membership"
+                            className="inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-2 text-xs font-bold text-green-700 transition hover:bg-green-200 hover:text-green-800 focus:outline-none focus:ring-2 focus:ring-green-400"
+                        >
                             Premium Member
 
                             {membershipLabel && (
@@ -26,7 +31,7 @@ export default function DashboardHero({ isMember, membershipUntil }) {
                                     aktif hingga {membershipLabel}
                                 </span>
                             )}
-                        </span>
+                        </Link>
                     )}
                 </div>
 
