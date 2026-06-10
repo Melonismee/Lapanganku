@@ -10,6 +10,11 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata = {
   title: "Lapanganku",
   description: "Court booking app",
+  icons: {
+    icon: "/logo-icon.svg",
+    shortcut: "/logo-icon.svg",
+    apple: "/logo-icon.svg",
+  },
 };
 
 export default function RootLayout({ children }) {
