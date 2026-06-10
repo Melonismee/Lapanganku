@@ -15,8 +15,13 @@ export default function useLogin() {
             const res = await login(data);
             return res.data;
         } catch (err) {
-            console.log(err.response);
-            setError(err.response?.data?.message || "Login gagal");
+            const status = err.response?.status;
+            const message =
+                status === 429
+                    ? "Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi."
+                    : err.response?.data?.message || "Login gagal";
+
+            setError(message);
             throw err;
         } finally {
             setLoading(false);

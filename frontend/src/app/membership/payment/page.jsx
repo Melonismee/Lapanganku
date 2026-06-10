@@ -96,7 +96,7 @@ export default function MembershipPaymentPage() {
             setProofImage(null);
             setPreviewImage(null);
             setMembershipPayment(response.data?.membership_payment);
-            setMessage("Bukti pembayaran berhasil dikirim. Menunggu validasi admin.");
+            setMessage("Bukti pembayaran berhasil dikirim.");
         } catch (error) {
             setMessage(error.response?.data?.message || "Gagal mengirim bukti pembayaran.");
         } finally {
@@ -195,7 +195,7 @@ export default function MembershipPaymentPage() {
 
                                 {membershipPayment?.status === "waiting_confirmation" && (
                                     <div className="mt-4 rounded-xl bg-yellow-50 px-4 py-3 text-sm font-semibold text-yellow-700">
-                                        Bukti pembayaran sudah dikirim. Menunggu validasi admin.
+                                        Bukti pembayaran sedang menunggu validasi admin.
                                     </div>
                                 )}
 

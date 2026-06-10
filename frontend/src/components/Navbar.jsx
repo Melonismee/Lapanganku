@@ -36,8 +36,11 @@ export default function Navbar() {
 
     const isExploreActive =
         pathname === "/dashboard" ||
-        pathname.startsWith("/courts") ||
-        pathname.startsWith("/payment");
+        pathname.startsWith("/courts");
+
+    const isBookingsActive =
+        pathname.startsWith("/bookings") ||
+        pathname.startsWith("/payment/booking");
 
     const menuClass = (active) => {
         return active
@@ -69,7 +72,7 @@ export default function Navbar() {
 
                     <button
                         onClick={() => router.push("/bookings")}
-                        className={`${menuClass(pathname.startsWith("/bookings"))} h-20 flex items-center`}
+                        className={`${menuClass(isBookingsActive)} h-20 flex items-center`}
                     >
                         Bookings
                     </button>

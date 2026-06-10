@@ -187,7 +187,7 @@ export default function MembershipPage() {
                                     <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-red-600 text-xs font-black">
                                         x
                                     </span>
-                                    Booking sampai 3 hari ke depan
+                                    Booking maksimal 2 hari ke depan
                                 </li>
                                 <li className="flex items-start gap-3">
                                     <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-red-600 text-xs font-black">

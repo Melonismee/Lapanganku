@@ -38,7 +38,7 @@ export default function PaymentBookingPage() {
             setBooking(response.data.booking);
         } catch (error) {
             console.log(error.response);
-            router.push("/dashboard");
+            router.push("/bookings");
         } finally {
             setLoading(false);
         }
@@ -78,7 +78,7 @@ export default function PaymentBookingPage() {
 
             setProofImage(null);
             setPreviewImage(null);
-            setMessage("Bukti pembayaran berhasil dikirim. Menunggu validasi admin.");
+            setMessage("Bukti pembayaran berhasil dikirim.");
 
             await loadBooking();
         } catch (error) {
@@ -129,10 +129,10 @@ export default function PaymentBookingPage() {
 
             <main className="max-w-5xl mx-auto px-8 py-10">
                 <button
-                    onClick={() => router.push("/dashboard")}
+                    onClick={() => router.push("/bookings")}
                     className="mb-6 text-sm font-semibold text-gray-500 hover:text-slate-900"
                 >
-                    ← Kembali ke Dashboard
+                    ← Kembali ke Bookings
                 </button>
 
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
@@ -247,7 +247,7 @@ export default function PaymentBookingPage() {
 
                                 {paymentStatus === "waiting_confirmation" && (
                                     <div className="mt-4 rounded-xl bg-yellow-50 px-4 py-3 text-sm font-semibold text-yellow-700">
-                                        Bukti pembayaran sudah dikirim. Menunggu validasi admin.
+                                        Bukti pembayaran sedang menunggu validasi admin.
                                     </div>
                                 )}
 
